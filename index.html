@@ -316,7 +316,7 @@
     .badge.in-progress { background: var(--blue-bg); color: var(--blue); }
     .badge.paused      { background: var(--orange-bg); color: var(--orange); }
     .badge.completed   { background: var(--green-bg); color: var(--green); }
-    .badge.assigned    { background: var(--muted); color: var(--sub); }
+    .badge.assigned    { background: #F3E5F5; color: #6A1B9A; }
     .badge.pending     { background: #FFF9C4; color: #827717; }
 
     /* ── DETAIL ROWS ── */
@@ -527,7 +527,11 @@
       <div class="welcome-sub" id="date-tech"></div>
     </div>
 
-    <div class="summary-strip card" style="padding:16px;">
+    <div class="summary-strip card" style="padding:16px;grid-template-columns:repeat(4,1fr);">
+      <div class="sep">
+        <div class="num" style="color:#6A1B9A">1</div>
+        <div class="lbl">Assigned</div>
+      </div>
       <div class="sep">
         <div class="num blue">1</div>
         <div class="lbl">In Progress</div>
@@ -585,13 +589,26 @@
   </div>
   <div class="body">
     <div class="tabs">
-      <button class="tab-btn active" onclick="filterWO('all',this)">All (3)</button>
+      <button class="tab-btn active" onclick="filterWO('all',this)">All (4)</button>
+      <button class="tab-btn" onclick="filterWO('assigned',this)">Assigned</button>
       <button class="tab-btn" onclick="filterWO('in-progress',this)">In Progress</button>
       <button class="tab-btn" onclick="filterWO('paused',this)">Paused</button>
       <button class="tab-btn" onclick="filterWO('completed',this)">Completed</button>
     </div>
 
     <div id="wo-list">
+      <div class="wo-item" data-status="assigned" onclick="openWODetail('WO1083','2022 Toyota Camry','Full Inspection','assigned','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">
+        <div class="wo-top">
+          <div>
+            <div class="wo-id">WO1083</div>
+            <div class="wo-car">2022 Toyota Camry</div>
+          </div>
+          <span class="badge assigned">Assigned</span>
+        </div>
+        <div class="wo-svc">Full Inspection</div>
+        <button class="wo-open" onclick="event.stopPropagation();openWODetail('WO1083','2022 Toyota Camry','Full Inspection','assigned','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">Open</button>
+      </div>
+
       <div class="wo-item" data-status="in-progress" onclick="openWODetail('WO1042','2021 Ford Mustang','Oil Change + Brake Insp.','in-progress','Bryan A.','Nicole R.','Apr 3, 2026','High')">
         <div class="wo-top">
           <div>
@@ -724,7 +741,11 @@
       <div class="welcome-sub" id="date-advisor"></div>
     </div>
 
-    <div class="summary-strip card" style="padding:16px;">
+    <div class="summary-strip card" style="padding:16px;grid-template-columns:repeat(4,1fr);">
+      <div class="sep">
+        <div class="num" style="color:#6A1B9A">2</div>
+        <div class="lbl">Assigned</div>
+      </div>
       <div class="sep">
         <div class="num blue">2</div>
         <div class="lbl">In Progress</div>
@@ -734,8 +755,8 @@
         <div class="lbl">Paused</div>
       </div>
       <div>
-        <div class="num" style="color:#827717">1</div>
-        <div class="lbl">Pending</div>
+        <div class="num green">1</div>
+        <div class="lbl">Completed</div>
       </div>
     </div>
 
@@ -970,7 +991,8 @@
   const notes = {
     WO1042: 'Customer reports slight vibration when braking. Check brake pads and rotors. Oil is overdue — change required.',
     WO1075: 'Check engine light on. Possible misfire on cylinder 3. Customer says it stalls at low RPM occasionally.',
-    WO1056: 'Routine tire rotation. Tread depth normal. Alignment was slightly off — corrected to spec.'
+    WO1056: 'Routine tire rotation. Tread depth normal. Alignment was slightly off — corrected to spec.',
+    WO1083: 'Customer requested full inspection before a long road trip. No specific complaints reported.'
   };
   function openWODetail(id, car, svc, status, tech, advisor, date, priority) {
     document.getElementById('detail-title').textContent = id;
@@ -984,6 +1006,7 @@
     document.getElementById('d-notes').textContent    = notes[id] || 'No diagnostic notes yet.';
 
     const badgeMap = {
+      'assigned':    '<span class="badge assigned">Assigned</span>',
       'in-progress': '<span class="badge in-progress">In Progress</span>',
       'paused':      '<span class="badge paused">Paused</span>',
       'completed':   '<span class="badge completed">Completed</span>',
