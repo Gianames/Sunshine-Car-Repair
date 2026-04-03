@@ -156,6 +156,7 @@
       padding: 16px;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
+      overflow: hidden;
     }
     .card-title {
       font-size: 13px;
@@ -523,7 +524,7 @@
   <div class="body">
     <div>
       <div class="welcome-name">Welcome back, Bryan!</div>
-      <div class="welcome-sub">Friday, April 3, 2026</div>
+      <div class="welcome-sub" id="date-tech"></div>
     </div>
 
     <div class="summary-strip card" style="padding:16px;">
@@ -562,10 +563,10 @@
     </button>
   </div>
   <div class="bottomnav tech">
-    <button onclick="goBack()" title="Back">
+    <button disabled title="Back" style="opacity:0.3;cursor:default;">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <button class="active" onclick="goto('screen-tech-home')" title="Home">
+    <button disabled title="Home" style="opacity:0.3;cursor:default;">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     </button>
     <button onclick="doLogout()" title="Sign Out">
@@ -579,7 +580,6 @@
 <!-- ═══════════════════════════════════════════════ -->
 <div class="screen" id="screen-wo-dashboard">
   <div class="topbar tech">
-    <button class="topbar-back" onclick="goBack()">‹</button>
     <span class="topbar-title">My Work Orders</span>
     <span class="topbar-role">Technician</span>
   </div>
@@ -647,7 +647,6 @@
 <!-- ═══════════════════════════════════════════════ -->
 <div class="screen" id="screen-wo-detail">
   <div class="topbar tech">
-    <button class="topbar-back" onclick="goBack()">‹</button>
     <span class="topbar-title" id="detail-title">Work Order Detail</span>
     <span class="topbar-role">Technician</span>
   </div>
@@ -722,7 +721,7 @@
   <div class="body">
     <div>
       <div class="welcome-name">Welcome back, Nicole!</div>
-      <div class="welcome-sub">Friday, April 3, 2026</div>
+      <div class="welcome-sub" id="date-advisor"></div>
     </div>
 
     <div class="summary-strip card" style="padding:16px;">
@@ -783,10 +782,10 @@
     </div>
   </div>
   <div class="bottomnav advisor">
-    <button onclick="goBack()" title="Back">
+    <button disabled title="Back" style="opacity:0.3;cursor:default;">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <button class="active" onclick="goto('screen-advisor-home')" title="Home">
+    <button disabled title="Home" style="opacity:0.3;cursor:default;">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     </button>
     <button onclick="doLogout()" title="Sign Out">
@@ -800,7 +799,6 @@
 <!-- ═══════════════════════════════════════════════ -->
 <div class="screen" id="screen-create-wo">
   <div class="topbar advisor">
-    <button class="topbar-back" onclick="goBack()">‹</button>
     <span class="topbar-title">Create Work Order</span>
     <span class="topbar-role">Advisor</span>
   </div>
@@ -816,14 +814,14 @@
         <label>Phone Number</label>
         <input type="tel" id="cwo-phone" placeholder="(555) 000-0000"/>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="field">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0;">
+        <div class="field" style="min-width:0;">
           <label>Year</label>
-          <input type="text" id="cwo-year" placeholder="2024" maxlength="4"/>
+          <input type="text" id="cwo-year" placeholder="2024" maxlength="4" style="width:100%;min-width:0;"/>
         </div>
-        <div class="field">
+        <div class="field" style="min-width:0;">
           <label>Make</label>
-          <input type="text" id="cwo-make" placeholder="Ford"/>
+          <input type="text" id="cwo-make" placeholder="Ford" style="width:100%;min-width:0;"/>
         </div>
       </div>
       <div class="field">
@@ -897,6 +895,20 @@
   // ── STATE ──
   let history = [];
   let currentRole = '';
+
+  // ── DYNAMIC DATE ──
+  function getTodayString() {
+    const now = new Date();
+    return now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+  function setDates() {
+    const d = getTodayString();
+    ['date-tech','date-advisor'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = d;
+    });
+  }
+  setDates();
 
   // ── CREDENTIALS ──
   const creds = {
