@@ -7,9 +7,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --amber:    #C97A1A;
-      --amber-dk: #8B5412;
-      --amber-lt: #F5A623;
+      /* Login */
+      --login-color:   #814D06;
+      /* Technician */
+      --tech-color:    #E6921D;
+      --tech-dark:     #b56e10;
+      /* Service Advisor */
+      --adv-color:     #F5C075;
+      --adv-dark:      #c9913a;
+      /* Manager */
+      --mgr-color:     #AD6807;
+      --mgr-dark:      #7a4a05;
+      /* Shared */
       --cream:    #FDF6EC;
       --card:     #FFFFFF;
       --muted:    #F0E8D8;
@@ -26,6 +35,10 @@
       --red-bg:   #FFEBEE;
       --radius:   14px;
       --shadow:   0 2px 16px rgba(139,84,18,0.10);
+      /* backwards compat */
+      --amber:    #E6921D;
+      --amber-dk: #b56e10;
+      --amber-lt: #F5C075;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -55,7 +68,6 @@
 
     /* ── TOP BAR ── */
     .topbar {
-      background: linear-gradient(135deg, var(--amber-dk) 0%, var(--amber) 100%);
       color: white;
       padding: 18px 20px 16px;
       display: flex;
@@ -64,6 +76,9 @@
       gap: 12px;
       flex-shrink: 0;
     }
+    .topbar.tech    { background: #E6921D; }
+    .topbar.advisor { background: #c9913a; }
+    .topbar.manager { background: #AD6807; }
     .topbar-title {
       font-size: 17px;
       font-weight: 700;
@@ -105,28 +120,32 @@
 
     /* ── BOTTOM NAV ── */
     .bottomnav {
-      background: var(--amber-dk);
       display: flex;
       justify-content: space-around;
       padding: 10px 0 14px;
       flex-shrink: 0;
     }
+    .bottomnav.tech    { background: #b56e10; }
+    .bottomnav.advisor { background: #c9913a; }
+    .bottomnav.manager { background: #7a4a05; }
     .bottomnav button {
       background: none;
       border: none;
-      color: rgba(255,255,255,0.65);
+      color: rgba(255,255,255,0.70);
       cursor: pointer;
-      font-size: 22px;
-      width: 44px;
-      height: 36px;
+      width: 52px;
+      height: 40px;
       border-radius: 10px;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 0;
     }
+    .bottomnav button svg { width: 24px; height: 24px; stroke: rgba(255,255,255,0.70); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
+    .bottomnav button.active svg,
+    .bottomnav button:hover svg { stroke: white; }
     .bottomnav button.active, .bottomnav button:hover {
-      color: white;
       background: rgba(255,255,255,0.15);
     }
 
@@ -377,7 +396,7 @@
 
     /* ── LOGIN SPECIFIC ── */
     #screen-login {
-      background: linear-gradient(160deg, var(--amber-dk) 0%, #5C3610 100%);
+      background: linear-gradient(160deg, #814D06 0%, #4a2c02 100%);
       max-width: 420px;
     }
     .login-body {
@@ -387,7 +406,7 @@
       align-items: center;
       justify-content: center;
       padding: 32px 28px;
-      gap: 24px;
+      gap: 22px;
     }
     .login-logo {
       width: 80px; height: 80px;
@@ -404,12 +423,7 @@
       font-size: 26px;
       color: white;
       text-align: center;
-    }
-    .login-sub {
-      font-size: 13px;
-      color: rgba(255,255,255,0.65);
-      text-align: center;
-      margin-top: -16px;
+      line-height: 1.2;
     }
     .login-form {
       width: 100%;
@@ -418,24 +432,22 @@
       gap: 14px;
     }
     .login-form .field label { color: rgba(255,255,255,0.75); }
-    .login-form .field input, .login-form .field select {
+    .login-form .field input {
       background: rgba(255,255,255,0.12);
       border: 1.5px solid rgba(255,255,255,0.20);
       color: white;
     }
     .login-form .field input::placeholder { color: rgba(255,255,255,0.40); }
-    .login-form .field input:focus, .login-form .field select:focus {
+    .login-form .field input:focus {
       border-color: rgba(255,255,255,0.50);
       box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
     }
-    .login-form .field select option { background: #5C3610; color: white; }
     .login-form .btn-primary {
       background: white;
-      color: var(--amber-dk);
+      color: #814D06;
       box-shadow: 0 3px 16px rgba(0,0,0,0.2);
     }
     .login-form .btn-primary:hover { background: #FFF5E4; }
-    .login-form .error-msg { border: 1px solid rgba(200,40,40,0.3); }
 
     /* ── NOTIFICATION ITEM ── */
     .notif-item {
@@ -476,38 +488,26 @@
 <div class="screen active" id="screen-login">
   <div class="login-body">
     <div class="login-logo">☀️</div>
-    <div>
-      <div class="login-title">Sunshine Car Repair</div>
-      <div class="login-sub">Employee Portal</div>
-    </div>
+    <div class="login-title">Sunshine Car Repair</div>
 
     <div class="login-form">
       <div class="field">
-        <label>Employee Role</label>
-        <select id="login-role">
-          <option value="">Select your role…</option>
-          <option value="technician">Technician</option>
-          <option value="advisor">Service Advisor</option>
-          <option value="manager">Shop Manager</option>
-        </select>
-      </div>
-      <div class="field">
         <label>Employee ID</label>
-        <input type="text" id="login-id" placeholder="e.g. Technician" autocomplete="off"/>
+        <input type="text" id="login-id" placeholder="Enter your Employee ID" autocomplete="off"/>
       </div>
       <div class="field">
         <label>Password</label>
         <input type="password" id="login-pw" placeholder="••••••••"/>
       </div>
-      <div class="error-msg" id="login-err">Invalid credentials. Please try again.</div>
+      <div class="error-msg" id="login-err" style="display:none;background:rgba(200,40,40,0.18);color:#ffcccc;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:500;">Invalid credentials. Please try again.</div>
       <button class="btn-primary" onclick="doLogin()">Sign In →</button>
     </div>
 
-    <div style="color:rgba(255,255,255,0.45);font-size:12px;text-align:center;line-height:1.6">
+    <div style="color:rgba(255,255,255,0.45);font-size:12px;text-align:center;line-height:1.8">
       Demo credentials:<br>
-      Role: Technician · ID: Technician · PW: 123<br>
-      Role: Service Advisor · ID: Advisor · PW: 123<br>
-      Role: Shop Manager · ID: Manager · PW: 123
+      ID: Technician · PW: 123<br>
+      ID: Advisor · PW: 123<br>
+      ID: Manager · PW: 123
     </div>
   </div>
 </div>
@@ -516,7 +516,7 @@
 <!--  SCREEN 2 — TECHNICIAN HOME                     -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="screen" id="screen-tech-home">
-  <div class="topbar">
+  <div class="topbar tech">
     <span class="topbar-title">☀️ Sunshine Car Repair</span>
     <span class="topbar-role">Technician</span>
   </div>
@@ -561,10 +561,16 @@
       <div class="arrow">›</div>
     </button>
   </div>
-  <div class="bottomnav">
-    <button class="active" title="Home">🏠</button>
-    <button onclick="goto('screen-wo-dashboard')" title="Work Orders">📋</button>
-    <button onclick="doLogout()" title="Sign Out">↩️</button>
+  <div class="bottomnav tech">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="active" onclick="goto('screen-tech-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
   </div>
 </div>
 
@@ -572,7 +578,7 @@
 <!--  SCREEN 3 — WORK ORDER DASHBOARD (Technician)   -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="screen" id="screen-wo-dashboard">
-  <div class="topbar">
+  <div class="topbar tech">
     <button class="topbar-back" onclick="goBack()">‹</button>
     <span class="topbar-title">My Work Orders</span>
     <span class="topbar-role">Technician</span>
@@ -623,10 +629,16 @@
       </div>
     </div>
   </div>
-  <div class="bottomnav">
-    <button onclick="goto('screen-tech-home')" title="Home">🏠</button>
-    <button class="active" title="Work Orders">📋</button>
-    <button onclick="doLogout()" title="Sign Out">↩️</button>
+  <div class="bottomnav tech">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button onclick="goto('screen-tech-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
   </div>
 </div>
 
@@ -634,7 +646,7 @@
 <!--  SCREEN 4 — WORK ORDER DETAIL (Technician)      -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="screen" id="screen-wo-detail">
-  <div class="topbar">
+  <div class="topbar tech">
     <button class="topbar-back" onclick="goBack()">‹</button>
     <span class="topbar-title" id="detail-title">Work Order Detail</span>
     <span class="topbar-role">Technician</span>
@@ -686,10 +698,16 @@
     <button class="btn-secondary" onclick="showToast('Edit Diagnostic Notes coming in Sprint 2!')">Edit Diagnostic Notes</button>
 
   </div>
-  <div class="bottomnav">
-    <button onclick="goto('screen-tech-home')" title="Home">🏠</button>
-    <button onclick="goto('screen-wo-dashboard')" title="Work Orders">📋</button>
-    <button onclick="doLogout()" title="Sign Out">↩️</button>
+  <div class="bottomnav tech">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button onclick="goto('screen-tech-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
   </div>
 </div>
 
@@ -697,7 +715,7 @@
 <!--  SCREEN 8 — SERVICE ADVISOR HOME                -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="screen" id="screen-advisor-home">
-  <div class="topbar">
+  <div class="topbar advisor">
     <span class="topbar-title">☀️ Sunshine Car Repair</span>
     <span class="topbar-role">Service Advisor</span>
   </div>
@@ -764,10 +782,16 @@
       </div>
     </div>
   </div>
-  <div class="bottomnav">
-    <button class="active" title="Home">🏠</button>
-    <button onclick="goto('screen-create-wo')" title="Create WO">➕</button>
-    <button onclick="doLogout()" title="Sign Out">↩️</button>
+  <div class="bottomnav advisor">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="active" onclick="goto('screen-advisor-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
   </div>
 </div>
 
@@ -775,7 +799,7 @@
 <!--  SCREEN 9 — CREATE WORK ORDER                   -->
 <!-- ═══════════════════════════════════════════════ -->
 <div class="screen" id="screen-create-wo">
-  <div class="topbar">
+  <div class="topbar advisor">
     <button class="topbar-back" onclick="goBack()">‹</button>
     <span class="topbar-title">Create Work Order</span>
     <span class="topbar-role">Advisor</span>
@@ -876,9 +900,9 @@
 
   // ── CREDENTIALS ──
   const creds = {
-    technician: { id: 'Technician', pw: '123', home: 'screen-tech-home' },
-    advisor:    { id: 'Advisor',    pw: '123', home: 'screen-advisor-home' },
-    manager:    { id: 'Manager',    pw: '123', home: 'screen-manager-home' }
+    'Technician': { pw: '123', home: 'screen-tech-home',    role: 'technician' },
+    'Advisor':    { pw: '123', home: 'screen-advisor-home', role: 'advisor' },
+    'Manager':    { pw: '123', home: 'screen-manager-home', role: 'manager' }
   };
 
   // ── NAVIGATION ──
@@ -897,15 +921,14 @@
 
   // ── LOGIN ──
   function doLogin() {
-    const role = document.getElementById('login-role').value;
-    const id   = document.getElementById('login-id').value.trim();
-    const pw   = document.getElementById('login-pw').value.trim();
-    const err  = document.getElementById('login-err');
+    const id  = document.getElementById('login-id').value.trim();
+    const pw  = document.getElementById('login-pw').value.trim();
+    const err = document.getElementById('login-err');
 
-    const c = creds[role];
-    if (c && id === c.id && pw === c.pw) {
+    const c = creds[id];
+    if (c && pw === c.pw) {
       err.style.display = 'none';
-      currentRole = role;
+      currentRole = c.role;
       history = [];
       goto(c.home);
     } else {
@@ -915,9 +938,8 @@
   function doLogout() {
     history = [];
     currentRole = '';
-    document.getElementById('login-role').value = '';
-    document.getElementById('login-id').value   = '';
-    document.getElementById('login-pw').value   = '';
+    document.getElementById('login-id').value = '';
+    document.getElementById('login-pw').value = '';
     document.getElementById('login-err').style.display = 'none';
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     document.getElementById('screen-login').classList.add('active');
