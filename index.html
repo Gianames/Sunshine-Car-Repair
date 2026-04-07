@@ -826,7 +826,7 @@
       <div class="arrow">›</div>
     </button>
 
-    <button class="action-btn" onclick="showToast('All Work Orders list coming in Sprint 2!')">
+    <button class="action-btn" onclick="goto('screen-all-work-orders')">
       <div class="icon">📋</div>
       <div>
         <div class="label">View All Work Orders</div>
@@ -836,23 +836,33 @@
     </button>
 
     <div class="card">
-      <div class="card-title">Recent Notifications</div>
+      <div class="card-title" style="margin-bottom:12px;">Recent Notifications</div>
       <div id="advisor-notif-list">
-        <div class="notif-item" id="notif-WO1042">
-          <div class="ni-icon">🔔</div>
-          <div style="flex:1">
-            <div class="ni-wo">WO-1042 → <span style="color:var(--sub);font-weight:400">Bryan A. · 2021 Ford Mustang</span></div>
-            <div class="ni-sub">Status changed to In Progress</div>
-          </div>
-          <span class="badge in-progress">In Progress</span>
-        </div>
         <div class="notif-item">
-          <div class="ni-icon">🔔</div>
-          <div style="flex:1">
-            <div class="ni-wo">WO-1048 → <span style="color:var(--sub);font-weight:400">Alvaro N. · 2026 Porsche GT3</span></div>
-            <div class="ni-sub">New assignment sent</div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">
+              <div class="ni-wo">WO-1042 · <span style="color:var(--sub);font-weight:500">Bryan A.</span></div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span class="badge assigned">Assigned</span>
+                <span style="color:var(--sub);font-size:13px;font-weight:700;">→</span>
+                <span class="badge in-progress">In Progress</span>
+              </div>
+            </div>
+            <div class="ni-sub" style="margin-top:3px;">2021 Ford Mustang</div>
+            <div class="ni-sub" style="margin-top:2px;color:#aaa;">9:14 AM</div>
           </div>
-          <span class="badge assigned">Assigned</span>
+        </div>
+        <div class="notif-item" style="border-bottom:none;">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">
+              <div class="ni-wo">WO-1048 · <span style="color:var(--sub);font-weight:500">Alvaro N.</span></div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span class="badge assigned">Assigned</span>
+              </div>
+            </div>
+            <div class="ni-sub" style="margin-top:3px;">2026 Porsche GT3</div>
+            <div class="ni-sub" style="margin-top:2px;color:#aaa;">8:47 AM</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1218,6 +1228,32 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN — ALL WORK ORDERS (Advisor)             -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-all-work-orders">
+  <div class="topbar advisor">
+    <span class="topbar-title">All Work Orders</span>
+    <span class="topbar-role">Advisor</span>
+  </div>
+  <div class="body">
+    <div id="all-wo-list" style="display:flex;flex-direction:column;gap:10px;">
+      <!-- Populated dynamically by refreshAllWOList() -->
+    </div>
+  </div>
+  <div class="bottomnav advisor">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button onclick="goto('screen-advisor-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</div>
+
 
 <div id="toast" style="
   position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);
@@ -1272,6 +1308,7 @@
     if (cur) { history.push(cur.id); cur.classList.remove('active'); }
     document.getElementById(id).classList.add('active');
     window.scrollTo(0,0);
+    if (id === 'screen-all-work-orders') refreshAllWOList();
   }
   function goBack() {
     if (!history.length) return;
@@ -1411,6 +1448,9 @@
       return;
     }
 
+    // Capture previous status BEFORE updating anything
+    const prevStatus = wo.status;
+
     // Update status store
     woStatus[wo.id] = newStatus;
     currentWO.status = newStatus;
@@ -1433,12 +1473,12 @@
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     advisorNotifications.unshift({
-      woId:    wo.id,
-      car:     wo.car,
-      tech:    wo.tech,
-      status:  newStatus,
-      note:    note,
-      time:    timeStr
+      woId:       wo.id.replace(/^WO/, 'WO-'),
+      car:        wo.car,
+      tech:       wo.tech,
+      prevStatus: prevStatus,
+      status:     newStatus,
+      time:       timeStr
     });
 
     // Refresh advisor notifications panel if it exists in DOM
@@ -1454,53 +1494,85 @@
   }
 
   // ── REFRESH ADVISOR NOTIFICATIONS ──
+  // allNotifications = full log; home panel shows only latest 2
+  const staticNotifications = [
+    { woId: 'WO-1042', car: '2021 Ford Mustang', tech: 'Bryan A.', prevStatus: 'assigned',    status: 'in-progress', time: '9:14 AM' },
+    { woId: 'WO-1048', car: '2026 Porsche GT3',  tech: 'Alvaro N.', prevStatus: null,         status: 'assigned',    time: '8:47 AM' }
+  ];
+
+  function buildNotifItemHTML(n, borderless) {
+    const border = borderless ? 'border-bottom:none;' : '';
+    const transition = n.prevStatus
+      ? `${badgeMap[n.prevStatus]} <span style="color:var(--sub);font-size:13px;font-weight:700;">→</span> ${badgeMap[n.status]}`
+      : badgeMap[n.status] || '';
+    return `
+      <div class="notif-item" style="${border}">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">
+            <div class="ni-wo">${n.woId} · <span style="color:var(--sub);font-weight:500">${n.tech}</span></div>
+            <div style="display:flex;align-items:center;gap:4px;">${transition}</div>
+          </div>
+          <div class="ni-sub" style="margin-top:3px;">${n.car}</div>
+          <div class="ni-sub" style="margin-top:2px;color:#aaa;">${n.time}</div>
+        </div>
+      </div>`;
+  }
+
   function refreshAdvisorNotifications() {
     const container = document.getElementById('advisor-notif-list');
     if (!container) return;
 
-    // Build combined list: technician updates first, then static ones
-    let html = '';
+    // Combined list: newest dynamic first, then static
+    const all = [...advisorNotifications, ...staticNotifications];
 
+    // Home panel: max 2
+    const top2 = all.slice(0, 2);
+    container.innerHTML = top2.map((n, i) => buildNotifItemHTML(n, i === top2.length - 1)).join('');
+  }
+
+  // ── WO MASTER LIST — one entry per work order, used for "All Work Orders" screen ──
+  const woMasterList = [
+    { woId: 'WO1083', car: '2022 Toyota Camry',    tech: 'Bryan A.',  lastTime: '9:02 AM' },
+    { woId: 'WO1042', car: '2021 Ford Mustang',    tech: 'Bryan A.',  lastTime: '9:14 AM' },
+    { woId: 'WO1048', car: '2026 Porsche GT3',     tech: 'Alvaro N.', lastTime: '8:47 AM' },
+    { woId: 'WO1075', car: '2014 Porsche 918',     tech: 'Bryan A.',  lastTime: '8:30 AM' },
+    { woId: 'WO1056', car: '2026 BMW M4',          tech: 'Bryan A.',  lastTime: '7:55 AM' },
+    { woId: 'WO1038', car: '2023 Honda Civic',     tech: 'Marcus T.', lastTime: '8:10 AM' },
+  ];
+
+  function refreshAllWOList() {
+    const list = document.getElementById('all-wo-list');
+    if (!list) return;
+
+    // Merge dynamic new WOs created this session
+    const existingIds = woMasterList.map(w => w.woId);
     advisorNotifications.forEach(n => {
-      const badge = badgeMap[n.status] || n.status;
-      const noteHtml = n.note ? `<div class="ni-sub" style="color:var(--sub);font-style:italic;">"${n.note}"</div>` : '';
-      html += `
-        <div class="notif-item">
-          <div class="ni-icon">🔔</div>
-          <div style="flex:1">
-            <div class="ni-wo">${n.woId} → <span style="color:var(--sub);font-weight:400">${n.tech} · ${n.car}</span></div>
-            <div class="ni-sub">Status changed to ${statusLabel[n.status]} · ${n.time}</div>
-            ${noteHtml}
-          </div>
-          ${badge}
-        </div>`;
+      const rawId = n.woId.replace('WO-', 'WO');
+      if (!existingIds.includes(rawId)) {
+        woMasterList.unshift({ woId: rawId, car: n.car, tech: n.tech, lastTime: n.time });
+        existingIds.unshift(rawId);
+      } else {
+        // Update time for existing WO if it has a newer entry
+        const entry = woMasterList.find(w => w.woId === rawId);
+        if (entry) entry.lastTime = n.time;
+      }
     });
 
-    // Always show the static WO-1048 at the bottom
-    html += `
-      <div class="notif-item">
-        <div class="ni-icon">🔔</div>
-        <div style="flex:1">
-          <div class="ni-wo">WO-1048 → <span style="color:var(--sub);font-weight:400">Alvaro N. · 2026 Porsche GT3</span></div>
-          <div class="ni-sub">New assignment sent</div>
-        </div>
-        <span class="badge assigned">Assigned</span>
-      </div>`;
-
-    // If no technician updates yet, show the WO-1042 default
-    if (advisorNotifications.length === 0) {
-      html = `
-        <div class="notif-item" id="notif-WO1042">
-          <div class="ni-icon">🔔</div>
-          <div style="flex:1">
-            <div class="ni-wo">WO-1042 → <span style="color:var(--sub);font-weight:400">Bryan A. · 2021 Ford Mustang</span></div>
-            <div class="ni-sub" id="notif-WO1042-text">Status changed to In Progress</div>
+    list.innerHTML = woMasterList.map(w => {
+      const liveStatus = woStatus[w.woId] || 'assigned';
+      return `
+        <div class="card" style="display:flex;align-items:flex-start;padding:14px 16px;gap:0;">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">
+              <div class="ni-wo">${w.woId.replace('WO', 'WO-')} · <span style="color:var(--sub);font-weight:500">${w.tech}</span></div>
+              ${badgeMap[liveStatus]}
+            </div>
+            <div class="ni-sub" style="margin-top:3px;">${w.car}</div>
+            <div class="ni-sub" style="margin-top:2px;color:#aaa;">${w.lastTime}</div>
           </div>
-          <span class="badge in-progress" id="notif-WO1042-badge">In Progress</span>
-        </div>` + html;
-    }
-
-    container.innerHTML = html;
+          <button class="mgr-details-btn" style="margin-left:12px;margin-top:2px;flex-shrink:0;" onclick="showToast('Change log details coming in Sprint 2!')">Details</button>
+        </div>`;
+    }).join('');
   }
 
   // ── TECHNICIAN NAME MAP (dropdown value → short name used in WO data) ──
@@ -1585,12 +1657,12 @@
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     advisorNotifications.unshift({
-      woId:   woNum,
-      car:    vehicle,
-      tech:   tech,
-      status: 'assigned',
-      note:   `New work order created for ${customer}`,
-      time:   timeStr
+      woId:       woNum.replace(/^WO/, 'WO-'),
+      car:        vehicle,
+      tech:       tech,
+      prevStatus: null,
+      status:     'assigned',
+      time:       timeStr
     });
     refreshAdvisorNotifications();
 
