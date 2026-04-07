@@ -450,6 +450,61 @@
     }
     .login-form .btn-primary:hover { background: #FFF5E4; }
 
+    /* ── STATUS OPTION BUTTONS ── */
+    .status-option {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      text-align: left;
+      transition: all 0.18s;
+      width: 100%;
+      box-shadow: var(--shadow);
+    }
+    .status-option:hover { border-color: var(--amber); transform: translateY(-1px); }
+    .status-option.selected { border-color: var(--amber-dk); background: #FFF8EE; box-shadow: 0 0 0 3px rgba(201,122,26,0.12); }
+    .so-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    .so-label { font-size: 15px; font-weight: 600; color: var(--text); }
+    .so-desc  { font-size: 12px; color: var(--sub); margin-top: 2px; }
+    .so-check { margin-left: auto; font-size: 16px; color: var(--amber-dk); opacity: 0; transition: opacity 0.15s; }
+    .status-option.selected .so-check { opacity: 1; }
+
+    /* ── MANAGER WO ROW ── */
+    .mgr-wo-row {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.18s;
+      box-shadow: var(--shadow);
+    }
+    .mgr-wo-row:hover { border-color: #AD6807; transform: translateY(-1px); }
+    .mgr-left { flex: 1; }
+    .mgr-tech { font-size: 13px; color: var(--sub); margin-top: 2px; }
+    .mgr-details-btn {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.18s;
+      flex-shrink: 0;
+    }
+    .mgr-details-btn:hover { border-color: #AD6807; color: #AD6807; }
+
     /* ── NOTIFICATION ITEM ── */
     .notif-item {
       display: flex;
@@ -710,7 +765,7 @@
       <div style="font-size:14px;color:var(--sub);line-height:1.6" id="d-notes">No notes yet.</div>
     </div>
 
-    <button class="btn-primary" onclick="showToast('Status Update screen coming in Sprint 2!')">Update Status</button>
+    <button class="btn-primary" onclick="openStatusUpdate()">Update Status</button>
     <button class="btn-secondary" onclick="showToast('Edit Diagnostic Notes coming in Sprint 2!')">Edit Diagnostic Notes</button>
 
   </div>
@@ -782,23 +837,23 @@
 
     <div class="card">
       <div class="card-title">Recent Notifications</div>
-
-      <div class="notif-item">
-        <div class="ni-icon">🔔</div>
-        <div style="flex:1">
-          <div class="ni-wo">WO-1042 → <span style="color:var(--sub);font-weight:400">Bryan A. · 2021 Ford Mustang</span></div>
-          <div class="ni-sub">Status changed to Paused</div>
+      <div id="advisor-notif-list">
+        <div class="notif-item" id="notif-WO1042">
+          <div class="ni-icon">🔔</div>
+          <div style="flex:1">
+            <div class="ni-wo">WO-1042 → <span style="color:var(--sub);font-weight:400">Bryan A. · 2021 Ford Mustang</span></div>
+            <div class="ni-sub">Status changed to In Progress</div>
+          </div>
+          <span class="badge in-progress">In Progress</span>
         </div>
-        <span class="badge paused">Paused</span>
-      </div>
-
-      <div class="notif-item">
-        <div class="ni-icon">🔔</div>
-        <div style="flex:1">
-          <div class="ni-wo">WO-1048 → <span style="color:var(--sub);font-weight:400">Alvaro N. · 2026 Porsche GT3</span></div>
-          <div class="ni-sub">New assignment sent</div>
+        <div class="notif-item">
+          <div class="ni-icon">🔔</div>
+          <div style="flex:1">
+            <div class="ni-wo">WO-1048 → <span style="color:var(--sub);font-weight:400">Alvaro N. · 2026 Porsche GT3</span></div>
+            <div class="ni-sub">New assignment sent</div>
+          </div>
+          <span class="badge assigned">Assigned</span>
         </div>
-        <span class="badge assigned">Assigned</span>
       </div>
     </div>
   </div>
@@ -904,7 +959,266 @@
   </div>
 </div>
 
-<!-- ─── TOAST ─── -->
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 5 — STATUS UPDATE                       -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-status-update">
+  <div class="topbar tech">
+    <span class="topbar-title">Update Status</span>
+    <span class="topbar-role">Technician</span>
+  </div>
+  <div class="body">
+
+    <div class="card">
+      <div class="card-title">Work Order</div>
+      <div class="detail-row">
+        <span class="lbl">Work Order #</span>
+        <span class="val" id="su-woid">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Vehicle</span>
+        <span class="val" id="su-car">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Service</span>
+        <span class="val" id="su-svc">—</span>
+      </div>
+      <div class="detail-row" style="border-bottom:none;">
+        <span class="lbl">Current Status</span>
+        <span class="val" id="su-current-badge">—</span>
+      </div>
+    </div>
+
+    <div class="card-title" style="margin-bottom:4px;">Select New Status</div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="status-option" data-status="in-progress" onclick="selectStatus(this)">
+        <div class="so-dot" style="background:var(--blue);"></div>
+        <div>
+          <div class="so-label">In Progress</div>
+          <div class="so-desc">Currently working on this job</div>
+        </div>
+        <div class="so-check">✓</div>
+      </button>
+      <button class="status-option" data-status="paused" onclick="selectStatus(this)">
+        <div class="so-dot" style="background:var(--orange);"></div>
+        <div>
+          <div class="so-label">Paused</div>
+          <div class="so-desc">Temporarily stopped, awaiting parts or info</div>
+        </div>
+        <div class="so-check">✓</div>
+      </button>
+      <button class="status-option" data-status="completed" onclick="selectStatus(this)">
+        <div class="so-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="so-label">Completed</div>
+          <div class="so-desc">Job is fully finished</div>
+        </div>
+        <div class="so-check">✓</div>
+      </button>
+    </div>
+
+    <div class="field">
+      <label>Note (optional)</label>
+      <textarea id="su-note" placeholder="Add a note about this status change…"></textarea>
+    </div>
+
+    <div class="error-msg" id="su-err" style="display:none;">Please select a new status before confirming.</div>
+    <button class="btn-primary" onclick="submitStatusUpdate()">Confirm</button>
+    <button class="btn-secondary" onclick="goBack()">Cancel</button>
+
+  </div>
+  <div class="bottomnav tech">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button onclick="goto('screen-tech-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 11 — MANAGER HOME (Shop Overview)       -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-manager-home">
+  <div class="topbar manager">
+    <span class="topbar-title">☀️ Sunshine Car Repair</span>
+    <span class="topbar-role">Manager</span>
+  </div>
+  <div class="body">
+    <div>
+      <div class="welcome-name">Shop Overview</div>
+      <div class="welcome-sub" id="date-manager"></div>
+    </div>
+
+    <!-- Summary strip matching advisor numbers exactly -->
+    <div class="summary-strip card" style="padding:16px;grid-template-columns:repeat(4,1fr);">
+      <div class="sep">
+        <div class="num" style="color:#6A1B9A">2</div>
+        <div class="lbl">Assigned</div>
+      </div>
+      <div class="sep">
+        <div class="num blue">2</div>
+        <div class="lbl">In Progress</div>
+      </div>
+      <div class="sep">
+        <div class="num orange">1</div>
+        <div class="lbl">Paused</div>
+      </div>
+      <div>
+        <div class="num green">1</div>
+        <div class="lbl">Completed</div>
+      </div>
+    </div>
+
+    <!-- All active work orders list -->
+    <div class="card-title" style="margin-bottom:0">All Work Orders</div>
+
+    <div id="mgr-wo-list" style="display:flex;flex-direction:column;gap:10px;">
+
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1083','2022 Toyota Camry','Full Inspection','assigned','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">
+        <div class="mgr-left">
+          <div class="wo-id">WO1083</div>
+          <div class="mgr-tech">Bryan A.</div>
+        </div>
+        <span class="badge assigned">Assigned</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1083','2022 Toyota Camry','Full Inspection','assigned','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">Details</button>
+      </div>
+
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1042','2021 Ford Mustang','Oil Change + Brake Insp.','in-progress','Bryan A.','Nicole R.','Apr 3, 2026','High')">
+        <div class="mgr-left">
+          <div class="wo-id">WO1042</div>
+          <div class="mgr-tech">Bryan A.</div>
+        </div>
+        <span class="badge in-progress">In Progress</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1042','2021 Ford Mustang','Oil Change + Brake Insp.','in-progress','Bryan A.','Nicole R.','Apr 3, 2026','High')">Details</button>
+      </div>
+
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1048','2026 Porsche GT3','Engine Diagnostic','assigned','Alvaro N.','Nicole R.','Apr 3, 2026','Medium')">
+        <div class="mgr-left">
+          <div class="wo-id">WO1048</div>
+          <div class="mgr-tech">Alvaro N.</div>
+        </div>
+        <span class="badge assigned">Assigned</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1048','2026 Porsche GT3','Engine Diagnostic','assigned','Alvaro N.','Nicole R.','Apr 3, 2026','Medium')">Details</button>
+      </div>
+
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1075','2014 Porsche 918','Engine Diagnostic','paused','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">
+        <div class="mgr-left">
+          <div class="wo-id">WO1075</div>
+          <div class="mgr-tech">Bryan A.</div>
+        </div>
+        <span class="badge paused">Paused</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1075','2014 Porsche 918','Engine Diagnostic','paused','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">Details</button>
+      </div>
+
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1056','2026 BMW M4','Tire Rotation + Alignment','completed','Bryan A.','Nicole R.','Apr 2, 2026','Low')">
+        <div class="mgr-left">
+          <div class="wo-id">WO1056</div>
+          <div class="mgr-tech">Bryan A.</div>
+        </div>
+        <span class="badge completed">Completed</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1056','2026 BMW M4','Tire Rotation + Alignment','completed','Bryan A.','Nicole R.','Apr 2, 2026','Low')">Details</button>
+      </div>
+
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1038','2023 Honda Civic','Transmission Service','in-progress','Marcus T.','Nicole R.','Apr 3, 2026','High')">
+        <div class="mgr-left">
+          <div class="wo-id">WO1038</div>
+          <div class="mgr-tech">Marcus T.</div>
+        </div>
+        <span class="badge in-progress">In Progress</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1038','2023 Honda Civic','Transmission Service','in-progress','Marcus T.','Nicole R.','Apr 3, 2026','High')">Details</button>
+      </div>
+
+    </div>
+  </div>
+  <div class="bottomnav manager">
+    <button disabled title="Back" style="opacity:0.3;cursor:default;">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button disabled title="Home" style="opacity:0.3;cursor:default;">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN 12 — MANAGER WORK ORDER DETAIL          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-mgr-detail">
+  <div class="topbar manager">
+    <span class="topbar-title" id="mgr-detail-title">Work Order Detail</span>
+    <span class="topbar-role">Manager</span>
+  </div>
+  <div class="body">
+
+    <div class="card">
+      <div class="card-title">Work Order Info</div>
+      <div class="detail-row">
+        <span class="lbl">Work Order #</span>
+        <span class="val" id="md-woid">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Vehicle</span>
+        <span class="val" id="md-car">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Service</span>
+        <span class="val" id="md-svc">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Status</span>
+        <span class="val" id="md-status">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Priority</span>
+        <span class="val" id="md-priority">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Assigned To</span>
+        <span class="val" id="md-tech">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Advisor</span>
+        <span class="val" id="md-advisor">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Date</span>
+        <span class="val" id="md-date">—</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Diagnostic Notes</div>
+      <div style="font-size:14px;color:var(--sub);line-height:1.6" id="md-notes">No notes yet.</div>
+    </div>
+
+    <div style="background:#FFF8EE;border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--sub);">
+      👁 View only — managers can monitor but cannot edit work orders.
+    </div>
+
+  </div>
+  <div class="bottomnav manager">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button onclick="goto('screen-manager-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</div>
+
+
 <div id="toast" style="
   position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);
   background:#1A1209;color:white;padding:12px 20px;border-radius:12px;
@@ -916,6 +1230,20 @@
   // ── STATE ──
   let history = [];
   let currentRole = '';
+  let currentWO = {}; // tracks the currently open WO
+
+  // ── SHARED WO STATUS STORE ──
+  // Holds live status for each WO, updated by technician
+  const woStatus = {
+    WO1083: 'assigned',
+    WO1042: 'in-progress',
+    WO1075: 'paused',
+    WO1056: 'completed'
+  };
+
+  // ── ADVISOR NOTIFICATIONS LOG ──
+  // Populated when technician submits a status update
+  const advisorNotifications = [];
 
   // ── DYNAMIC DATE ──
   function getTodayString() {
@@ -924,7 +1252,7 @@
   }
   function setDates() {
     const d = getTodayString();
-    ['date-tech','date-advisor'].forEach(id => {
+    ['date-tech','date-advisor','date-manager'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.textContent = d;
     });
@@ -957,12 +1285,13 @@
     const id  = document.getElementById('login-id').value.trim();
     const pw  = document.getElementById('login-pw').value.trim();
     const err = document.getElementById('login-err');
-
     const c = creds[id];
     if (c && pw === c.pw) {
       err.style.display = 'none';
       currentRole = c.role;
       history = [];
+      setDates();
+      if (id === 'Advisor') refreshAdvisorNotifications();
       goto(c.home);
     } else {
       err.style.display = 'block';
@@ -987,6 +1316,20 @@
     });
   }
 
+  // ── BADGE HTML HELPER ──
+  const badgeMap = {
+    'assigned':    '<span class="badge assigned">Assigned</span>',
+    'in-progress': '<span class="badge in-progress">In Progress</span>',
+    'paused':      '<span class="badge paused">Paused</span>',
+    'completed':   '<span class="badge completed">Completed</span>',
+  };
+  const statusLabel = {
+    'assigned':    'Assigned',
+    'in-progress': 'In Progress',
+    'paused':      'Paused',
+    'completed':   'Completed'
+  };
+
   // ── OPEN WO DETAIL ──
   const notes = {
     WO1042: 'Customer reports slight vibration when braking. Check brake pads and rotors. Oil is overdue — change required.',
@@ -995,6 +1338,10 @@
     WO1083: 'Customer requested full inspection before a long road trip. No specific complaints reported.'
   };
   function openWODetail(id, car, svc, status, tech, advisor, date, priority) {
+    // Always read latest status from store
+    const liveStatus = woStatus[id] || status;
+    currentWO = { id, car, svc, status: liveStatus, tech, advisor, date, priority };
+
     document.getElementById('detail-title').textContent = id;
     document.getElementById('d-woid').textContent     = id;
     document.getElementById('d-car').textContent      = car;
@@ -1004,16 +1351,168 @@
     document.getElementById('d-date').textContent     = date;
     document.getElementById('d-priority').textContent = priority;
     document.getElementById('d-notes').textContent    = notes[id] || 'No diagnostic notes yet.';
-
-    const badgeMap = {
-      'assigned':    '<span class="badge assigned">Assigned</span>',
-      'in-progress': '<span class="badge in-progress">In Progress</span>',
-      'paused':      '<span class="badge paused">Paused</span>',
-      'completed':   '<span class="badge completed">Completed</span>',
-    };
-    document.getElementById('d-status').innerHTML = badgeMap[status] || status;
+    document.getElementById('d-status').innerHTML     = badgeMap[liveStatus] || liveStatus;
     goto('screen-wo-detail');
   }
+
+  // ── OPEN MANAGER WO DETAIL ──
+  function openMgrDetail(id, car, svc, status, tech, advisor, date, priority) {
+    const liveStatus = woStatus[id] || status;
+    document.getElementById('mgr-detail-title').textContent = id;
+    document.getElementById('md-woid').textContent     = id;
+    document.getElementById('md-car').textContent      = car;
+    document.getElementById('md-svc').textContent      = svc;
+    document.getElementById('md-tech').textContent     = tech;
+    document.getElementById('md-advisor').textContent  = advisor;
+    document.getElementById('md-date').textContent     = date;
+    document.getElementById('md-priority').textContent = priority;
+    document.getElementById('md-notes').textContent    = notes[id] || 'No diagnostic notes yet.';
+    document.getElementById('md-status').innerHTML     = badgeMap[liveStatus] || liveStatus;
+    goto('screen-mgr-detail');
+  }
+  function openStatusUpdate() {
+    const wo = currentWO;
+    document.getElementById('su-woid').textContent       = wo.id;
+    document.getElementById('su-car').textContent        = wo.car;
+    document.getElementById('su-svc').textContent        = wo.svc;
+    document.getElementById('su-current-badge').innerHTML = badgeMap[wo.status] || wo.status;
+    document.getElementById('su-note').value             = '';
+    document.getElementById('su-err').style.display      = 'none';
+
+    // Reset all options, highlight current
+    document.querySelectorAll('.status-option').forEach(btn => {
+      btn.classList.remove('selected');
+      if (btn.dataset.status === wo.status) btn.classList.add('selected');
+    });
+    goto('screen-status-update');
+  }
+
+  // ── SELECT STATUS OPTION ──
+  function selectStatus(btn) {
+    document.querySelectorAll('.status-option').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('su-err').style.display = 'none';
+  }
+
+  // ── SUBMIT STATUS UPDATE ──
+  function submitStatusUpdate() {
+    const selected = document.querySelector('.status-option.selected');
+    if (!selected) {
+      document.getElementById('su-err').style.display = 'block';
+      return;
+    }
+    const newStatus = selected.dataset.status;
+    const note      = document.getElementById('su-note').value.trim();
+    const wo        = currentWO;
+
+    // Guard: same status
+    if (newStatus === wo.status) {
+      showToast('Status is already ' + statusLabel[newStatus]);
+      return;
+    }
+
+    // Update status store
+    woStatus[wo.id] = newStatus;
+    currentWO.status = newStatus;
+
+    // Update WO list item badge + data-status in the dashboard
+    const woItem = document.querySelector(`.wo-item[onclick*="${wo.id}"]`);
+    if (woItem) {
+      woItem.dataset.status = newStatus;
+      const badgeEl = woItem.querySelector('.badge');
+      if (badgeEl) {
+        badgeEl.className = 'badge ' + newStatus;
+        badgeEl.textContent = statusLabel[newStatus];
+      }
+    }
+
+    // Update WO detail badge live
+    document.getElementById('d-status').innerHTML = badgeMap[newStatus];
+
+    // Push to advisor notifications
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    advisorNotifications.unshift({
+      woId:    wo.id,
+      car:     wo.car,
+      tech:    wo.tech,
+      status:  newStatus,
+      note:    note,
+      time:    timeStr
+    });
+
+    // Refresh advisor notifications panel if it exists in DOM
+    refreshAdvisorNotifications();
+
+    showToast(`✅ ${wo.id} updated to ${statusLabel[newStatus]}`);
+    setTimeout(() => {
+      // Clear history and go straight to WO dashboard
+      history = [];
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-wo-dashboard').classList.add('active');
+    }, 1000);
+  }
+
+  // ── REFRESH ADVISOR NOTIFICATIONS ──
+  function refreshAdvisorNotifications() {
+    const container = document.getElementById('advisor-notif-list');
+    if (!container) return;
+
+    // Build combined list: technician updates first, then static ones
+    let html = '';
+
+    advisorNotifications.forEach(n => {
+      const badge = badgeMap[n.status] || n.status;
+      const noteHtml = n.note ? `<div class="ni-sub" style="color:var(--sub);font-style:italic;">"${n.note}"</div>` : '';
+      html += `
+        <div class="notif-item">
+          <div class="ni-icon">🔔</div>
+          <div style="flex:1">
+            <div class="ni-wo">${n.woId} → <span style="color:var(--sub);font-weight:400">${n.tech} · ${n.car}</span></div>
+            <div class="ni-sub">Status changed to ${statusLabel[n.status]} · ${n.time}</div>
+            ${noteHtml}
+          </div>
+          ${badge}
+        </div>`;
+    });
+
+    // Always show the static WO-1048 at the bottom
+    html += `
+      <div class="notif-item">
+        <div class="ni-icon">🔔</div>
+        <div style="flex:1">
+          <div class="ni-wo">WO-1048 → <span style="color:var(--sub);font-weight:400">Alvaro N. · 2026 Porsche GT3</span></div>
+          <div class="ni-sub">New assignment sent</div>
+        </div>
+        <span class="badge assigned">Assigned</span>
+      </div>`;
+
+    // If no technician updates yet, show the WO-1042 default
+    if (advisorNotifications.length === 0) {
+      html = `
+        <div class="notif-item" id="notif-WO1042">
+          <div class="ni-icon">🔔</div>
+          <div style="flex:1">
+            <div class="ni-wo">WO-1042 → <span style="color:var(--sub);font-weight:400">Bryan A. · 2021 Ford Mustang</span></div>
+            <div class="ni-sub" id="notif-WO1042-text">Status changed to In Progress</div>
+          </div>
+          <span class="badge in-progress" id="notif-WO1042-badge">In Progress</span>
+        </div>` + html;
+    }
+
+    container.innerHTML = html;
+  }
+
+  // ── TECHNICIAN NAME MAP (dropdown value → short name used in WO data) ──
+  const techNameMap = {
+    'Bryan A.':   'Bryan A.',
+    'Alvaro N.':  'Alvaro N.',
+    'Marcus T.':  'Marcus T.',
+    'Jenna P.':   'Jenna P.'
+  };
+
+  // ── WO COUNTER (increments for each new WO created) ──
+  let woCounter = 1090;
 
   // ── CREATE WO ──
   function submitWO() {
@@ -1025,6 +1524,7 @@
     const service  = document.getElementById('cwo-service').value;
     const tech     = document.getElementById('cwo-tech').value;
     const priority = document.getElementById('cwo-priority').value;
+    const noteVal  = document.getElementById('cwo-notes').value.trim();
     const err      = document.getElementById('cwo-err');
 
     if (!customer || !phone || !year || !make || !model || !service || !tech || !priority) {
@@ -1033,16 +1533,76 @@
     }
     err.style.display = 'none';
 
-    const woNum = 'WO' + (1100 + Math.floor(Math.random()*100));
+    // Generate WO number
+    woCounter++;
+    const woNum   = 'WO' + woCounter;
+    const vehicle = `${year} ${make} ${model}`;
+    const today   = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+
+    // Add to status store as assigned
+    woStatus[woNum] = 'assigned';
+
+    // Add diagnostic note if provided
+    if (noteVal) notes[woNum] = noteVal;
+
+    // ── Inject into technician's WO dashboard ──
+    // Only add if assigned to Bryan A. (the logged-in technician demo)
+    // In a real app this would filter by session; for now Bryan A. is the technician account
+    if (tech === 'Bryan A.') {
+      const woList = document.getElementById('wo-list');
+      const escapedArgs = `'${woNum}','${vehicle}','${service}','assigned','${tech}','Nicole R.','${today}','${priority}'`;
+
+      const newItem = document.createElement('div');
+      newItem.className = 'wo-item';
+      newItem.dataset.status = 'assigned';
+      newItem.setAttribute('onclick', `openWODetail(${escapedArgs})`);
+      newItem.innerHTML = `
+        <div class="wo-top">
+          <div>
+            <div class="wo-id">${woNum}</div>
+            <div class="wo-car">${vehicle}</div>
+          </div>
+          <span class="badge assigned">Assigned</span>
+        </div>
+        <div class="wo-svc">${service}</div>
+        <button class="wo-open" onclick="event.stopPropagation();openWODetail(${escapedArgs})">Open</button>`;
+
+      // Insert at the top of the list
+      woList.insertBefore(newItem, woList.firstChild);
+
+      // Update the "All" tab count
+      const allTab = document.querySelector('.tab-btn');
+      const total  = woList.querySelectorAll('.wo-item').length;
+      allTab.textContent = `All (${total})`;
+
+      // Update technician home summary strip assigned count
+      const assignedNum = woList.querySelectorAll('.wo-item[data-status="assigned"]').length;
+      const summaryNums = document.querySelectorAll('#screen-tech-home .num');
+      if (summaryNums[0]) summaryNums[0].textContent = assignedNum;
+    }
+
+    // ── Push to advisor notifications ──
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    advisorNotifications.unshift({
+      woId:   woNum,
+      car:    vehicle,
+      tech:   tech,
+      status: 'assigned',
+      note:   `New work order created for ${customer}`,
+      time:   timeStr
+    });
+    refreshAdvisorNotifications();
+
     showToast(`✅ ${woNum} created & assigned to ${tech}!`);
 
     // Clear form
     ['cwo-customer','cwo-phone','cwo-year','cwo-make','cwo-model','cwo-vin','cwo-notes']
-      .forEach(id=>document.getElementById(id).value='');
+      .forEach(id => document.getElementById(id).value = '');
     ['cwo-service','cwo-tech','cwo-priority']
-      .forEach(id=>document.getElementById(id).value='');
+      .forEach(id => document.getElementById(id).value = '');
 
-    setTimeout(()=>goto('screen-advisor-home'), 1200);
+    setTimeout(() => goto('screen-advisor-home'), 1200);
   }
 
   // ── TOAST ──
