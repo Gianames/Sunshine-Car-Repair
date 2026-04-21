@@ -612,7 +612,7 @@
       <div class="arrow">›</div>
     </button>
 
-    <button class="action-btn" onclick="showToast('Recent Activity log coming in Sprint 2!')">
+    <button class="action-btn" onclick="goto('screen-recent-activity')">
       <div class="icon">🕐</div>
       <div>
         <div class="label">Recent Activity</div>
@@ -766,7 +766,7 @@
     </div>
 
     <button class="btn-primary" onclick="openStatusUpdate()">Update Status</button>
-    <button class="btn-secondary" onclick="showToast('Edit Diagnostic Notes coming in Sprint 2!')">Edit Diagnostic Notes</button>
+    <button class="btn-secondary" onclick="openEditNotes()">Edit Diagnostic Notes</button>
 
   </div>
   <div class="bottomnav tech">
@@ -836,33 +836,23 @@
     </button>
 
     <div class="card">
-      <div class="card-title" style="margin-bottom:12px;">Recent Notifications</div>
+      <div class="card-title">Recent Notifications</div>
       <div id="advisor-notif-list">
-        <div class="notif-item">
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">
-              <div class="ni-wo">WO-1042 · <span style="color:var(--sub);font-weight:500">Bryan A.</span></div>
-              <div style="display:flex;align-items:center;gap:4px;">
-                <span class="badge assigned">Assigned</span>
-                <span style="color:var(--sub);font-size:13px;font-weight:700;">→</span>
-                <span class="badge in-progress">In Progress</span>
-              </div>
-            </div>
-            <div class="ni-sub" style="margin-top:3px;">2021 Ford Mustang</div>
-            <div class="ni-sub" style="margin-top:2px;color:#aaa;">9:14 AM</div>
+        <div class="notif-item" id="notif-WO1042">
+          <div class="ni-icon">🔔</div>
+          <div style="flex:1">
+            <div class="ni-wo">WO-1042 → <span style="color:var(--sub);font-weight:400">Bryan A. · 2021 Ford Mustang</span></div>
+            <div class="ni-sub">Status changed to In Progress</div>
           </div>
+          <span class="badge in-progress">In Progress</span>
         </div>
-        <div class="notif-item" style="border-bottom:none;">
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">
-              <div class="ni-wo">WO-1048 · <span style="color:var(--sub);font-weight:500">Alvaro N.</span></div>
-              <div style="display:flex;align-items:center;gap:4px;">
-                <span class="badge assigned">Assigned</span>
-              </div>
-            </div>
-            <div class="ni-sub" style="margin-top:3px;">2026 Porsche GT3</div>
-            <div class="ni-sub" style="margin-top:2px;color:#aaa;">8:47 AM</div>
+        <div class="notif-item">
+          <div class="ni-icon">🔔</div>
+          <div style="flex:1">
+            <div class="ni-wo">WO-1048 → <span style="color:var(--sub);font-weight:400">Alvaro N. · 2026 Porsche GT3</span></div>
+            <div class="ni-sub">New assignment sent</div>
           </div>
+          <span class="badge assigned">Assigned</span>
         </div>
       </div>
     </div>
@@ -1210,8 +1200,9 @@
       <div style="font-size:14px;color:var(--sub);line-height:1.6" id="md-notes">No notes yet.</div>
     </div>
 
+    <button class="btn-primary" onclick="openManagerOverride()" style="background:linear-gradient(135deg,#AD6807,#7a4a05);">Override Status</button>
     <div style="background:#FFF8EE;border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--sub);">
-      👁 View only — managers can monitor but cannot edit work orders.
+      👁 Managers can override status for corrections only. All overrides are logged and visible to the advisor.
     </div>
 
   </div>
@@ -1220,6 +1211,80 @@
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
     <button onclick="goto('screen-manager-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN — RECENT ACTIVITY (Technician)          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-recent-activity">
+  <div class="topbar tech">
+    <span class="topbar-title">Recent Activity</span>
+    <span class="topbar-role">Technician</span>
+  </div>
+  <div class="body">
+    <div style="font-size:13px;color:var(--sub);">All status changes you have made this session, most recent first.</div>
+    <div id="activity-log-list" style="display:flex;flex-direction:column;gap:10px;">
+      <!-- populated by refreshActivityLog() -->
+    </div>
+    <div id="activity-empty" style="display:none;background:white;border:1px solid var(--border);border-radius:var(--radius);padding:24px 16px;text-align:center;color:var(--sub);font-size:14px;">
+      No status changes yet this session.<br>Update a work order to see activity here.
+    </div>
+  </div>
+  <div class="bottomnav tech">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button onclick="goto('screen-tech-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN — EDIT DIAGNOSTIC NOTES (Technician)    -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-edit-notes">
+  <div class="topbar tech">
+    <span class="topbar-title" id="en-title">Edit Notes</span>
+    <span class="topbar-role">Technician</span>
+  </div>
+  <div class="body">
+    <div class="card">
+      <div class="card-title">Work Order</div>
+      <div class="detail-row">
+        <span class="lbl">Work Order #</span>
+        <span class="val" id="en-woid">—</span>
+      </div>
+      <div class="detail-row" style="border-bottom:none;">
+        <span class="lbl">Vehicle</span>
+        <span class="val" id="en-car">—</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Diagnostic Notes</label>
+      <textarea id="en-notes" placeholder="Record your findings, observations, and any parts needed…" style="min-height:160px;"></textarea>
+    </div>
+
+    <div class="error-msg" id="en-err" style="display:none;">Notes cannot be empty.</div>
+    <button class="btn-primary" onclick="submitEditNotes()">Save Notes</button>
+    <button class="btn-secondary" onclick="goBack()">Cancel</button>
+  </div>
+  <div class="bottomnav tech">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button onclick="goto('screen-tech-home')" title="Home">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     </button>
     <button onclick="doLogout()" title="Sign Out">
@@ -1237,8 +1302,15 @@
     <span class="topbar-role">Advisor</span>
   </div>
   <div class="body">
+    <div class="tabs" id="awo-tabs">
+      <button class="tab-btn active" onclick="filterAllWO('all',this)">All</button>
+      <button class="tab-btn" onclick="filterAllWO('assigned',this)">Assigned</button>
+      <button class="tab-btn" onclick="filterAllWO('in-progress',this)">In Progress</button>
+      <button class="tab-btn" onclick="filterAllWO('paused',this)">Paused</button>
+      <button class="tab-btn" onclick="filterAllWO('completed',this)">Completed</button>
+    </div>
     <div id="all-wo-list" style="display:flex;flex-direction:column;gap:10px;">
-      <!-- Populated dynamically by refreshAllWOList() -->
+      <!-- populated by refreshAllWOList() -->
     </div>
   </div>
   <div class="bottomnav advisor">
@@ -1254,6 +1326,92 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════ -->
+<!--  SCREEN — MANAGER OVERRIDE                      -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-mgr-override">
+  <div class="topbar manager">
+    <span class="topbar-title">Override Status</span>
+    <span class="topbar-role">Manager</span>
+  </div>
+  <div class="body">
+    <div class="card">
+      <div class="card-title">Work Order</div>
+      <div class="detail-row">
+        <span class="lbl">Work Order #</span>
+        <span class="val" id="ov-woid">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Vehicle</span>
+        <span class="val" id="ov-car">—</span>
+      </div>
+      <div class="detail-row" style="border-bottom:none;">
+        <span class="lbl">Current Status</span>
+        <span class="val" id="ov-current-badge">—</span>
+      </div>
+    </div>
+
+    <div style="background:#FFF8EE;border:1px solid #E8C97A;border-radius:12px;padding:12px 16px;font-size:13px;color:#7A5C00;">
+      ⚠️ Manager override. Use only to correct status errors or reopen incorrectly closed work orders.
+    </div>
+
+    <div class="card-title" style="margin-bottom:4px;">Set Status To</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="status-option" data-status="assigned" onclick="selectOverrideStatus(this)">
+        <div class="so-dot" style="background:#6A1B9A;"></div>
+        <div>
+          <div class="so-label">Assigned</div>
+          <div class="so-desc">Reopen — return to assigned state</div>
+        </div>
+        <div class="so-check">✓</div>
+      </button>
+      <button class="status-option" data-status="in-progress" onclick="selectOverrideStatus(this)">
+        <div class="so-dot" style="background:var(--blue);"></div>
+        <div>
+          <div class="so-label">In Progress</div>
+          <div class="so-desc">Mark as actively being worked on</div>
+        </div>
+        <div class="so-check">✓</div>
+      </button>
+      <button class="status-option" data-status="paused" onclick="selectOverrideStatus(this)">
+        <div class="so-dot" style="background:var(--orange);"></div>
+        <div>
+          <div class="so-label">Paused</div>
+          <div class="so-desc">Place on hold</div>
+        </div>
+        <div class="so-check">✓</div>
+      </button>
+      <button class="status-option" data-status="completed" onclick="selectOverrideStatus(this)">
+        <div class="so-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="so-label">Completed</div>
+          <div class="so-desc">Mark as fully finished</div>
+        </div>
+        <div class="so-check">✓</div>
+      </button>
+    </div>
+
+    <div class="field">
+      <label>Override Reason (required)</label>
+      <textarea id="ov-reason" placeholder="Explain why this override is necessary…"></textarea>
+    </div>
+
+    <div class="error-msg" id="ov-err" style="display:none;">Please select a status and provide a reason.</div>
+    <button class="btn-primary" onclick="submitOverride()" style="background:linear-gradient(135deg,#AD6807,#7a4a05);">Confirm Override</button>
+    <button class="btn-secondary" onclick="goBack()">Cancel</button>
+  </div>
+  <div class="bottomnav manager">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button onclick="goto('screen-manager-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</div>
 
 <div id="toast" style="
   position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);
@@ -1266,25 +1424,47 @@
   // ── STATE ──
   let history = [];
   let currentRole = '';
-  let currentWO = {}; // tracks the currently open WO
+  let currentWO = {};
 
   // ── SHARED WO STATUS STORE ──
-  // Holds live status for each WO, updated by technician
   const woStatus = {
     WO1083: 'assigned',
     WO1042: 'in-progress',
     WO1075: 'paused',
-    WO1056: 'completed'
+    WO1056: 'completed',
+    WO1048: 'assigned',
+    WO1038: 'in-progress'
   };
 
+  // ── ACTIVITY LOG (Technician status change history) ──
+  const activityLog = [];
+
   // ── ADVISOR NOTIFICATIONS LOG ──
-  // Populated when technician submits a status update
   const advisorNotifications = [];
+
+  // ── DIAGNOSTIC NOTES STORE ──
+  const notes = {
+    WO1042: 'Customer reports slight vibration when braking. Check brake pads and rotors. Oil is overdue — change required.',
+    WO1075: 'Check engine light on. Possible misfire on cylinder 3. Customer says it stalls at low RPM occasionally.',
+    WO1056: 'Routine tire rotation. Tread depth normal. Alignment was slightly off — corrected to spec.',
+    WO1083: 'Customer requested full inspection before a long road trip. No specific complaints reported.',
+    WO1048: 'Engine diagnostic requested. Customer reports rough idle.',
+    WO1038: 'Transmission service overdue per mileage. Customer reports slight slipping between 2nd and 3rd gear.'
+  };
+
+  // ── WO MASTER LIST ──
+  const woMasterList = [
+    { woId:'WO1083', car:'2022 Toyota Camry',  svc:'Full Inspection',            tech:'Bryan A.',  advisor:'Nicole R.', date:'Apr 3, 2026', priority:'Medium' },
+    { woId:'WO1042', car:'2021 Ford Mustang',  svc:'Oil Change + Brake Insp.',  tech:'Bryan A.',  advisor:'Nicole R.', date:'Apr 3, 2026', priority:'High'   },
+    { woId:'WO1048', car:'2026 Porsche GT3',   svc:'Engine Diagnostic',          tech:'Alvaro N.', advisor:'Nicole R.', date:'Apr 3, 2026', priority:'Medium' },
+    { woId:'WO1075', car:'2014 Porsche 918',   svc:'Engine Diagnostic',          tech:'Bryan A.',  advisor:'Nicole R.', date:'Apr 3, 2026', priority:'Medium' },
+    { woId:'WO1056', car:'2026 BMW M4',        svc:'Tire Rotation + Alignment', tech:'Bryan A.',  advisor:'Nicole R.', date:'Apr 2, 2026', priority:'Low'    },
+    { woId:'WO1038', car:'2023 Honda Civic',   svc:'Transmission Service',       tech:'Marcus T.', advisor:'Nicole R.', date:'Apr 3, 2026', priority:'High'   },
+  ];
 
   // ── DYNAMIC DATE ──
   function getTodayString() {
-    const now = new Date();
-    return now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    return new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   }
   function setDates() {
     const d = getTodayString();
@@ -1297,9 +1477,20 @@
 
   // ── CREDENTIALS ──
   const creds = {
-    'Technician': { pw: '123', home: 'screen-tech-home',    role: 'technician' },
-    'Advisor':    { pw: '123', home: 'screen-advisor-home', role: 'advisor' },
-    'Manager':    { pw: '123', home: 'screen-manager-home', role: 'manager' }
+    'Technician': { pw:'123', home:'screen-tech-home',    role:'technician' },
+    'Advisor':    { pw:'123', home:'screen-advisor-home', role:'advisor'    },
+    'Manager':    { pw:'123', home:'screen-manager-home', role:'manager'    }
+  };
+
+  // ── BADGE + LABEL HELPERS ──
+  const badgeMap = {
+    'assigned':    '<span class="badge assigned">Assigned</span>',
+    'in-progress': '<span class="badge in-progress">In Progress</span>',
+    'paused':      '<span class="badge paused">Paused</span>',
+    'completed':   '<span class="badge completed">Completed</span>',
+  };
+  const statusLabel = {
+    'assigned':'Assigned','in-progress':'In Progress','paused':'Paused','completed':'Completed'
   };
 
   // ── NAVIGATION ──
@@ -1309,6 +1500,7 @@
     document.getElementById(id).classList.add('active');
     window.scrollTo(0,0);
     if (id === 'screen-all-work-orders') refreshAllWOList();
+    if (id === 'screen-recent-activity') refreshActivityLog();
   }
   function goBack() {
     if (!history.length) return;
@@ -1322,7 +1514,7 @@
     const id  = document.getElementById('login-id').value.trim();
     const pw  = document.getElementById('login-pw').value.trim();
     const err = document.getElementById('login-err');
-    const c = creds[id];
+    const c   = creds[id];
     if (c && pw === c.pw) {
       err.style.display = 'none';
       currentRole = c.role;
@@ -1335,66 +1527,245 @@
     }
   }
   function doLogout() {
-    history = [];
-    currentRole = '';
+    history = []; currentRole = '';
     document.getElementById('login-id').value = '';
     document.getElementById('login-pw').value = '';
     document.getElementById('login-err').style.display = 'none';
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-login').classList.add('active');
   }
 
-  // ── FILTER WO ──
+  // ── FILTER WO DASHBOARD (Technician) ──
   function filterWO(status, btn) {
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('#screen-wo-dashboard .tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    document.querySelectorAll('.wo-item').forEach(item=>{
-      item.style.display = (status === 'all' || item.dataset.status === status) ? 'flex' : 'none';
+    document.querySelectorAll('.wo-item').forEach(item => {
+      item.style.display = (status==='all' || item.dataset.status===status) ? 'flex' : 'none';
     });
   }
 
-  // ── BADGE HTML HELPER ──
-  const badgeMap = {
-    'assigned':    '<span class="badge assigned">Assigned</span>',
-    'in-progress': '<span class="badge in-progress">In Progress</span>',
-    'paused':      '<span class="badge paused">Paused</span>',
-    'completed':   '<span class="badge completed">Completed</span>',
-  };
-  const statusLabel = {
-    'assigned':    'Assigned',
-    'in-progress': 'In Progress',
-    'paused':      'Paused',
-    'completed':   'Completed'
-  };
-
   // ── OPEN WO DETAIL ──
-  const notes = {
-    WO1042: 'Customer reports slight vibration when braking. Check brake pads and rotors. Oil is overdue — change required.',
-    WO1075: 'Check engine light on. Possible misfire on cylinder 3. Customer says it stalls at low RPM occasionally.',
-    WO1056: 'Routine tire rotation. Tread depth normal. Alignment was slightly off — corrected to spec.',
-    WO1083: 'Customer requested full inspection before a long road trip. No specific complaints reported.'
-  };
   function openWODetail(id, car, svc, status, tech, advisor, date, priority) {
-    // Always read latest status from store
     const liveStatus = woStatus[id] || status;
-    currentWO = { id, car, svc, status: liveStatus, tech, advisor, date, priority };
-
-    document.getElementById('detail-title').textContent = id;
-    document.getElementById('d-woid').textContent     = id;
-    document.getElementById('d-car').textContent      = car;
-    document.getElementById('d-svc').textContent      = svc;
-    document.getElementById('d-tech').textContent     = tech;
-    document.getElementById('d-advisor').textContent  = advisor;
-    document.getElementById('d-date').textContent     = date;
-    document.getElementById('d-priority').textContent = priority;
-    document.getElementById('d-notes').textContent    = notes[id] || 'No diagnostic notes yet.';
-    document.getElementById('d-status').innerHTML     = badgeMap[liveStatus] || liveStatus;
+    currentWO = { id, car, svc, status:liveStatus, tech, advisor, date, priority };
+    document.getElementById('detail-title').textContent  = id;
+    document.getElementById('d-woid').textContent        = id;
+    document.getElementById('d-car').textContent         = car;
+    document.getElementById('d-svc').textContent         = svc;
+    document.getElementById('d-tech').textContent        = tech;
+    document.getElementById('d-advisor').textContent     = advisor;
+    document.getElementById('d-date').textContent        = date;
+    document.getElementById('d-priority').textContent    = priority;
+    document.getElementById('d-notes').textContent       = notes[id] || 'No diagnostic notes yet.';
+    document.getElementById('d-status').innerHTML        = badgeMap[liveStatus] || liveStatus;
     goto('screen-wo-detail');
   }
 
-  // ── OPEN MANAGER WO DETAIL ──
+  // ── OPEN STATUS UPDATE ──
+  function openStatusUpdate() {
+    const wo = currentWO;
+    document.getElementById('su-woid').textContent        = wo.id;
+    document.getElementById('su-car').textContent         = wo.car;
+    document.getElementById('su-svc').textContent         = wo.svc;
+    document.getElementById('su-current-badge').innerHTML = badgeMap[wo.status] || wo.status;
+    document.getElementById('su-note').value              = '';
+    document.getElementById('su-err').style.display       = 'none';
+    document.querySelectorAll('#screen-status-update .status-option').forEach(btn => {
+      btn.classList.remove('selected');
+      if (btn.dataset.status === wo.status) btn.classList.add('selected');
+    });
+    goto('screen-status-update');
+  }
+
+  // ── SELECT STATUS OPTION ──
+  function selectStatus(btn) {
+    document.querySelectorAll('#screen-status-update .status-option').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('su-err').style.display = 'none';
+  }
+
+  // ── SUBMIT STATUS UPDATE ──
+  function submitStatusUpdate() {
+    const selected = document.querySelector('#screen-status-update .status-option.selected');
+    if (!selected) { document.getElementById('su-err').style.display = 'block'; return; }
+    const newStatus = selected.dataset.status;
+    const note      = document.getElementById('su-note').value.trim();
+    const wo        = currentWO;
+    if (newStatus === wo.status) { showToast('Status is already ' + statusLabel[newStatus]); return; }
+
+    const prevStatus = wo.status;
+    const now        = new Date();
+    const timeStr    = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+
+    woStatus[wo.id]  = newStatus;
+    currentWO.status = newStatus;
+
+    // Update WO list badge in dashboard
+    const woItem = document.querySelector('#wo-list .wo-item[onclick*="' + wo.id + '"]');
+    if (woItem) {
+      woItem.dataset.status = newStatus;
+      const badgeEl = woItem.querySelector('.badge');
+      if (badgeEl) { badgeEl.className = 'badge ' + newStatus; badgeEl.textContent = statusLabel[newStatus]; }
+    }
+
+    // Update WO detail badge live
+    document.getElementById('d-status').innerHTML = badgeMap[newStatus];
+
+    // Update technician home summary counts
+    refreshTechSummary();
+
+    // Push to activity log
+    activityLog.unshift({ woId:wo.id, car:wo.car, svc:wo.svc, prevStatus, newStatus, note, time:timeStr, date:getTodayString() });
+
+    // Push to advisor notifications
+    advisorNotifications.unshift({ woId:wo.id, car:wo.car, tech:wo.tech, prevStatus, status:newStatus, note, time:timeStr });
+    refreshAdvisorNotifications();
+
+    showToast('✅ ' + wo.id + ' updated to ' + statusLabel[newStatus]);
+    setTimeout(() => {
+      history = [];
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-wo-dashboard').classList.add('active');
+    }, 1000);
+  }
+
+  // ── REFRESH TECHNICIAN HOME SUMMARY ──
+  function refreshTechSummary() {
+    const items  = document.querySelectorAll('#wo-list .wo-item');
+    const counts = { assigned:0, 'in-progress':0, paused:0, completed:0 };
+    items.forEach(i => { if (counts[i.dataset.status] !== undefined) counts[i.dataset.status]++; });
+    const nums = document.querySelectorAll('#screen-tech-home .summary-strip .num');
+    if (nums[0]) nums[0].textContent = counts['assigned'];
+    if (nums[1]) nums[1].textContent = counts['in-progress'];
+    if (nums[2]) nums[2].textContent = counts['paused'];
+    if (nums[3]) nums[3].textContent = counts['completed'];
+  }
+
+  // ── REFRESH ACTIVITY LOG ──
+  function refreshActivityLog() {
+    const list  = document.getElementById('activity-log-list');
+    const empty = document.getElementById('activity-empty');
+    if (!list) return;
+    if (activityLog.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    list.innerHTML = activityLog.map(entry =>
+      '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:6px;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">' +
+          '<div class="wo-id">' + entry.woId + '</div>' +
+          '<div style="display:flex;align-items:center;gap:4px;">' +
+            badgeMap[entry.prevStatus] +
+            '<span style="color:var(--sub);font-size:13px;font-weight:700;">→</span>' +
+            badgeMap[entry.newStatus] +
+          '</div>' +
+        '</div>' +
+        '<div style="font-size:14px;font-weight:600;color:var(--text);">' + entry.car + '</div>' +
+        '<div style="font-size:12px;color:var(--sub);">' + entry.svc + '</div>' +
+        (entry.note ? '<div style="font-size:12px;color:var(--sub);font-style:italic;margin-top:2px;">"' + entry.note + '"</div>' : '') +
+        '<div style="font-size:11px;color:#aaa;margin-top:2px;">' + entry.time + ' · ' + entry.date + '</div>' +
+      '</div>'
+    ).join('');
+  }
+
+  // ── OPEN EDIT NOTES ──
+  function openEditNotes() {
+    const wo = currentWO;
+    document.getElementById('en-title').textContent = 'Edit Notes — ' + wo.id;
+    document.getElementById('en-woid').textContent  = wo.id;
+    document.getElementById('en-car').textContent   = wo.car;
+    document.getElementById('en-notes').value       = notes[wo.id] || '';
+    document.getElementById('en-err').style.display = 'none';
+    goto('screen-edit-notes');
+  }
+
+  // ── SUBMIT EDIT NOTES ──
+  function submitEditNotes() {
+    const val = document.getElementById('en-notes').value.trim();
+    if (!val) { document.getElementById('en-err').style.display = 'block'; return; }
+    notes[currentWO.id] = val;
+    document.getElementById('d-notes').textContent = val;
+    showToast('✅ Diagnostic notes saved');
+    setTimeout(() => goBack(), 800);
+  }
+
+  // ── REFRESH ADVISOR NOTIFICATIONS ──
+  function refreshAdvisorNotifications() {
+    const container = document.getElementById('advisor-notif-list');
+    if (!container) return;
+    const staticOld = [
+      { woId:'WO1042', car:'2021 Ford Mustang', tech:'Bryan A.',  prevStatus:'assigned', status:'in-progress', note:'', time:'9:14 AM' },
+      { woId:'WO1048', car:'2026 Porsche GT3',  tech:'Alvaro N.', prevStatus:null,       status:'assigned',    note:'', time:'8:47 AM' }
+    ];
+    const all = [...advisorNotifications, ...staticOld];
+    container.innerHTML = all.map(function(n, i) {
+      const transition = n.prevStatus
+        ? badgeMap[n.prevStatus] + '<span style="color:var(--sub);font-size:13px;font-weight:700;">→</span>' + badgeMap[n.status]
+        : badgeMap[n.status];
+      const noteHtml = n.note ? '<div class="ni-sub" style="font-style:italic;">"' + n.note + '"</div>' : '';
+      const border   = i === all.length - 1 ? 'border-bottom:none;' : '';
+      const woLabel  = n.woId.replace(/^WO(?!-)/, 'WO-');
+      return '<div class="notif-item" style="' + border + '">' +
+        '<div class="ni-icon">🔔</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="ni-wo">' + woLabel + ' · <span style="color:var(--sub);font-weight:400">' + n.tech + '</span></div>' +
+          '<div class="ni-sub" style="margin-top:2px;">' + n.car + '</div>' +
+          '<div style="display:flex;align-items:center;gap:4px;margin-top:4px;flex-wrap:wrap;">' + transition + '</div>' +
+          noteHtml +
+          '<div class="ni-sub" style="margin-top:3px;color:#aaa;">' + n.time + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ── FILTER ALL WORK ORDERS (Advisor) ──
+  let awoFilter = 'all';
+  function filterAllWO(status, btn) {
+    awoFilter = status;
+    document.querySelectorAll('#awo-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    refreshAllWOList();
+  }
+
+  function refreshAllWOList() {
+    const list = document.getElementById('all-wo-list');
+    if (!list) return;
+    const existingIds = woMasterList.map(w => w.woId);
+    advisorNotifications.forEach(function(n) {
+      const rawId = n.woId.replace('WO-','WO');
+      if (!existingIds.includes(rawId) && rawId.startsWith('WO')) {
+        woMasterList.unshift({ woId:rawId, car:n.car, svc:'', tech:n.tech, advisor:'Nicole R.', date:getTodayString(), priority:'—' });
+        existingIds.unshift(rawId);
+      }
+    });
+    const filtered = awoFilter === 'all'
+      ? woMasterList
+      : woMasterList.filter(w => (woStatus[w.woId] || 'assigned') === awoFilter);
+    if (filtered.length === 0) {
+      list.innerHTML = '<div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:24px 16px;text-align:center;color:var(--sub);font-size:14px;">No work orders with this status.</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(function(w) {
+      const liveStatus = woStatus[w.woId] || 'assigned';
+      return '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:6px;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+          '<div class="wo-id">' + w.woId + '</div>' +
+          badgeMap[liveStatus] +
+        '</div>' +
+        '<div style="font-size:15px;font-weight:600;color:var(--text);">' + w.car + '</div>' +
+        (w.svc ? '<div style="font-size:13px;color:var(--sub);">' + w.svc + '</div>' : '') +
+        '<div style="font-size:12px;color:var(--sub);">Technician: ' + w.tech + ' · Priority: ' + w.priority + '</div>' +
+        '<div style="font-size:11px;color:#aaa;">' + w.date + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ── MANAGER DETAIL ──
   function openMgrDetail(id, car, svc, status, tech, advisor, date, priority) {
     const liveStatus = woStatus[id] || status;
+    currentWO = { id, car, svc, status:liveStatus, tech, advisor, date, priority };
     document.getElementById('mgr-detail-title').textContent = id;
     document.getElementById('md-woid').textContent     = id;
     document.getElementById('md-car').textContent      = car;
@@ -1407,183 +1778,64 @@
     document.getElementById('md-status').innerHTML     = badgeMap[liveStatus] || liveStatus;
     goto('screen-mgr-detail');
   }
-  function openStatusUpdate() {
-    const wo = currentWO;
-    document.getElementById('su-woid').textContent       = wo.id;
-    document.getElementById('su-car').textContent        = wo.car;
-    document.getElementById('su-svc').textContent        = wo.svc;
-    document.getElementById('su-current-badge').innerHTML = badgeMap[wo.status] || wo.status;
-    document.getElementById('su-note').value             = '';
-    document.getElementById('su-err').style.display      = 'none';
 
-    // Reset all options, highlight current
-    document.querySelectorAll('.status-option').forEach(btn => {
+  // ── OPEN MANAGER OVERRIDE ──
+  function openManagerOverride() {
+    const wo = currentWO;
+    document.getElementById('ov-woid').textContent        = wo.id;
+    document.getElementById('ov-car').textContent         = wo.car;
+    document.getElementById('ov-current-badge').innerHTML = badgeMap[wo.status] || wo.status;
+    document.getElementById('ov-reason').value            = '';
+    document.getElementById('ov-err').style.display       = 'none';
+    document.querySelectorAll('#screen-mgr-override .status-option').forEach(btn => {
       btn.classList.remove('selected');
       if (btn.dataset.status === wo.status) btn.classList.add('selected');
     });
-    goto('screen-status-update');
+    goto('screen-mgr-override');
   }
 
-  // ── SELECT STATUS OPTION ──
-  function selectStatus(btn) {
-    document.querySelectorAll('.status-option').forEach(b => b.classList.remove('selected'));
+  // ── SELECT OVERRIDE STATUS ──
+  function selectOverrideStatus(btn) {
+    document.querySelectorAll('#screen-mgr-override .status-option').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
-    document.getElementById('su-err').style.display = 'none';
+    document.getElementById('ov-err').style.display = 'none';
   }
 
-  // ── SUBMIT STATUS UPDATE ──
-  function submitStatusUpdate() {
-    const selected = document.querySelector('.status-option.selected');
-    if (!selected) {
-      document.getElementById('su-err').style.display = 'block';
-      return;
-    }
-    const newStatus = selected.dataset.status;
-    const note      = document.getElementById('su-note').value.trim();
-    const wo        = currentWO;
-
-    // Guard: same status
-    if (newStatus === wo.status) {
-      showToast('Status is already ' + statusLabel[newStatus]);
-      return;
-    }
-
-    // Capture previous status BEFORE updating anything
+  // ── SUBMIT OVERRIDE ──
+  function submitOverride() {
+    const selected = document.querySelector('#screen-mgr-override .status-option.selected');
+    const reason   = document.getElementById('ov-reason').value.trim();
+    if (!selected || !reason) { document.getElementById('ov-err').style.display = 'block'; return; }
+    const newStatus  = selected.dataset.status;
+    const wo         = currentWO;
     const prevStatus = wo.status;
+    if (newStatus === prevStatus) { showToast('Status is already ' + statusLabel[newStatus]); return; }
 
-    // Update status store
-    woStatus[wo.id] = newStatus;
+    woStatus[wo.id]  = newStatus;
     currentWO.status = newStatus;
 
-    // Update WO list item badge + data-status in the dashboard
-    const woItem = document.querySelector(`.wo-item[onclick*="${wo.id}"]`);
-    if (woItem) {
-      woItem.dataset.status = newStatus;
-      const badgeEl = woItem.querySelector('.badge');
-      if (badgeEl) {
-        badgeEl.className = 'badge ' + newStatus;
-        badgeEl.textContent = statusLabel[newStatus];
-      }
+    document.getElementById('md-status').innerHTML = badgeMap[newStatus];
+
+    const mgrRow = document.querySelector('#mgr-wo-list .mgr-wo-row[onclick*="' + wo.id + '"]');
+    if (mgrRow) {
+      const badgeEl = mgrRow.querySelector('.badge');
+      if (badgeEl) { badgeEl.className = 'badge ' + newStatus; badgeEl.textContent = statusLabel[newStatus]; }
     }
 
-    // Update WO detail badge live
-    document.getElementById('d-status').innerHTML = badgeMap[newStatus];
-
-    // Push to advisor notifications
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    advisorNotifications.unshift({
-      woId:       wo.id.replace(/^WO/, 'WO-'),
-      car:        wo.car,
-      tech:       wo.tech,
-      prevStatus: prevStatus,
-      status:     newStatus,
-      time:       timeStr
-    });
-
-    // Refresh advisor notifications panel if it exists in DOM
+    const now     = new Date();
+    const timeStr = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    advisorNotifications.unshift({ woId:wo.id, car:wo.car, tech:'Manager (override)', prevStatus, status:newStatus, note:reason, time:timeStr });
     refreshAdvisorNotifications();
 
-    showToast(`✅ ${wo.id} updated to ${statusLabel[newStatus]}`);
+    showToast('✅ ' + wo.id + ' overridden to ' + statusLabel[newStatus]);
     setTimeout(() => {
-      // Clear history and go straight to WO dashboard
       history = [];
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById('screen-wo-dashboard').classList.add('active');
+      document.getElementById('screen-mgr-detail').classList.add('active');
     }, 1000);
   }
 
-  // ── REFRESH ADVISOR NOTIFICATIONS ──
-  // allNotifications = full log; home panel shows only latest 2
-  const staticNotifications = [
-    { woId: 'WO-1042', car: '2021 Ford Mustang', tech: 'Bryan A.', prevStatus: 'assigned',    status: 'in-progress', time: '9:14 AM' },
-    { woId: 'WO-1048', car: '2026 Porsche GT3',  tech: 'Alvaro N.', prevStatus: null,         status: 'assigned',    time: '8:47 AM' }
-  ];
-
-  function buildNotifItemHTML(n, borderless) {
-    const border = borderless ? 'border-bottom:none;' : '';
-    const transition = n.prevStatus
-      ? `${badgeMap[n.prevStatus]} <span style="color:var(--sub);font-size:13px;font-weight:700;">→</span> ${badgeMap[n.status]}`
-      : badgeMap[n.status] || '';
-    return `
-      <div class="notif-item" style="${border}">
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">
-            <div class="ni-wo">${n.woId} · <span style="color:var(--sub);font-weight:500">${n.tech}</span></div>
-            <div style="display:flex;align-items:center;gap:4px;">${transition}</div>
-          </div>
-          <div class="ni-sub" style="margin-top:3px;">${n.car}</div>
-          <div class="ni-sub" style="margin-top:2px;color:#aaa;">${n.time}</div>
-        </div>
-      </div>`;
-  }
-
-  function refreshAdvisorNotifications() {
-    const container = document.getElementById('advisor-notif-list');
-    if (!container) return;
-
-    // Combined list: newest dynamic first, then static
-    const all = [...advisorNotifications, ...staticNotifications];
-
-    // Home panel: max 2
-    const top2 = all.slice(0, 2);
-    container.innerHTML = top2.map((n, i) => buildNotifItemHTML(n, i === top2.length - 1)).join('');
-  }
-
-  // ── WO MASTER LIST — one entry per work order, used for "All Work Orders" screen ──
-  const woMasterList = [
-    { woId: 'WO1083', car: '2022 Toyota Camry',    tech: 'Bryan A.',  lastTime: '9:02 AM' },
-    { woId: 'WO1042', car: '2021 Ford Mustang',    tech: 'Bryan A.',  lastTime: '9:14 AM' },
-    { woId: 'WO1048', car: '2026 Porsche GT3',     tech: 'Alvaro N.', lastTime: '8:47 AM' },
-    { woId: 'WO1075', car: '2014 Porsche 918',     tech: 'Bryan A.',  lastTime: '8:30 AM' },
-    { woId: 'WO1056', car: '2026 BMW M4',          tech: 'Bryan A.',  lastTime: '7:55 AM' },
-    { woId: 'WO1038', car: '2023 Honda Civic',     tech: 'Marcus T.', lastTime: '8:10 AM' },
-  ];
-
-  function refreshAllWOList() {
-    const list = document.getElementById('all-wo-list');
-    if (!list) return;
-
-    // Merge dynamic new WOs created this session
-    const existingIds = woMasterList.map(w => w.woId);
-    advisorNotifications.forEach(n => {
-      const rawId = n.woId.replace('WO-', 'WO');
-      if (!existingIds.includes(rawId)) {
-        woMasterList.unshift({ woId: rawId, car: n.car, tech: n.tech, lastTime: n.time });
-        existingIds.unshift(rawId);
-      } else {
-        // Update time for existing WO if it has a newer entry
-        const entry = woMasterList.find(w => w.woId === rawId);
-        if (entry) entry.lastTime = n.time;
-      }
-    });
-
-    list.innerHTML = woMasterList.map(w => {
-      const liveStatus = woStatus[w.woId] || 'assigned';
-      return `
-        <div class="card" style="display:flex;align-items:flex-start;padding:14px 16px;gap:0;">
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">
-              <div class="ni-wo">${w.woId.replace('WO', 'WO-')} · <span style="color:var(--sub);font-weight:500">${w.tech}</span></div>
-              ${badgeMap[liveStatus]}
-            </div>
-            <div class="ni-sub" style="margin-top:3px;">${w.car}</div>
-            <div class="ni-sub" style="margin-top:2px;color:#aaa;">${w.lastTime}</div>
-          </div>
-          <button class="mgr-details-btn" style="margin-left:12px;margin-top:2px;flex-shrink:0;" onclick="showToast('Change log details coming in Sprint 2!')">Details</button>
-        </div>`;
-    }).join('');
-  }
-
-  // ── TECHNICIAN NAME MAP (dropdown value → short name used in WO data) ──
-  const techNameMap = {
-    'Bryan A.':   'Bryan A.',
-    'Alvaro N.':  'Alvaro N.',
-    'Marcus T.':  'Marcus T.',
-    'Jenna P.':   'Jenna P.'
-  };
-
-  // ── WO COUNTER (increments for each new WO created) ──
+  // ── WO COUNTER ──
   let woCounter = 1090;
 
   // ── CREATE WO ──
@@ -1598,82 +1850,53 @@
     const priority = document.getElementById('cwo-priority').value;
     const noteVal  = document.getElementById('cwo-notes').value.trim();
     const err      = document.getElementById('cwo-err');
-
     if (!customer || !phone || !year || !make || !model || !service || !tech || !priority) {
-      err.style.display = 'block';
-      return;
+      err.style.display = 'block'; return;
     }
     err.style.display = 'none';
-
-    // Generate WO number
     woCounter++;
     const woNum   = 'WO' + woCounter;
-    const vehicle = `${year} ${make} ${model}`;
-    const today   = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-
-    // Add to status store as assigned
+    const vehicle = year + ' ' + make + ' ' + model;
+    const today   = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     woStatus[woNum] = 'assigned';
-
-    // Add diagnostic note if provided
     if (noteVal) notes[woNum] = noteVal;
-
-    // ── Inject into technician's WO dashboard ──
-    // Only add if assigned to Bryan A. (the logged-in technician demo)
-    // In a real app this would filter by session; for now Bryan A. is the technician account
+    woMasterList.unshift({ woId:woNum, car:vehicle, svc:service, tech, advisor:'Nicole R.', date:today, priority });
     if (tech === 'Bryan A.') {
-      const woList = document.getElementById('wo-list');
-      const escapedArgs = `'${woNum}','${vehicle}','${service}','assigned','${tech}','Nicole R.','${today}','${priority}'`;
-
-      const newItem = document.createElement('div');
-      newItem.className = 'wo-item';
-      newItem.dataset.status = 'assigned';
-      newItem.setAttribute('onclick', `openWODetail(${escapedArgs})`);
-      newItem.innerHTML = `
-        <div class="wo-top">
-          <div>
-            <div class="wo-id">${woNum}</div>
-            <div class="wo-car">${vehicle}</div>
-          </div>
-          <span class="badge assigned">Assigned</span>
-        </div>
-        <div class="wo-svc">${service}</div>
-        <button class="wo-open" onclick="event.stopPropagation();openWODetail(${escapedArgs})">Open</button>`;
-
-      // Insert at the top of the list
+      const woList      = document.getElementById('wo-list');
+      const escapedArgs = "'" + woNum + "','" + vehicle + "','" + service + "','assigned','" + tech + "','Nicole R.','" + today + "','" + priority + "'";
+      const newItem     = document.createElement('div');
+      newItem.className       = 'wo-item';
+      newItem.dataset.status  = 'assigned';
+      newItem.setAttribute('onclick', 'openWODetail(' + escapedArgs + ')');
+      newItem.innerHTML =
+        '<div class="wo-top"><div><div class="wo-id">' + woNum + '</div><div class="wo-car">' + vehicle + '</div></div>' +
+        '<span class="badge assigned">Assigned</span></div>' +
+        '<div class="wo-svc">' + service + '</div>' +
+        '<button class="wo-open" onclick="event.stopPropagation();openWODetail(' + escapedArgs + ')">Open</button>';
       woList.insertBefore(newItem, woList.firstChild);
-
-      // Update the "All" tab count
-      const allTab = document.querySelector('.tab-btn');
-      const total  = woList.querySelectorAll('.wo-item').length;
-      allTab.textContent = `All (${total})`;
-
-      // Update technician home summary strip assigned count
-      const assignedNum = woList.querySelectorAll('.wo-item[data-status="assigned"]').length;
-      const summaryNums = document.querySelectorAll('#screen-tech-home .num');
-      if (summaryNums[0]) summaryNums[0].textContent = assignedNum;
+      const allTab = document.querySelector('#screen-wo-dashboard .tab-btn');
+      allTab.textContent = 'All (' + woList.querySelectorAll('.wo-item').length + ')';
+      refreshTechSummary();
     }
-
-    // ── Push to advisor notifications ──
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    advisorNotifications.unshift({
-      woId:       woNum.replace(/^WO/, 'WO-'),
-      car:        vehicle,
-      tech:       tech,
-      prevStatus: null,
-      status:     'assigned',
-      time:       timeStr
-    });
+    const mgrList = document.getElementById('mgr-wo-list');
+    if (mgrList) {
+      const mgrArgs = "'" + woNum + "','" + vehicle + "','" + service + "','assigned','" + tech + "','Nicole R.','" + today + "','" + priority + "'";
+      const mgrItem = document.createElement('div');
+      mgrItem.className = 'mgr-wo-row';
+      mgrItem.setAttribute('onclick', 'openMgrDetail(' + mgrArgs + ')');
+      mgrItem.innerHTML =
+        '<div class="mgr-left"><div class="wo-id">' + woNum + '</div><div class="mgr-tech">' + tech + '</div></div>' +
+        '<span class="badge assigned">Assigned</span>' +
+        '<button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail(' + mgrArgs + ')">Details</button>';
+      mgrList.insertBefore(mgrItem, mgrList.firstChild);
+    }
+    const now     = new Date();
+    const timeStr = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    advisorNotifications.unshift({ woId:woNum, car:vehicle, tech, prevStatus:null, status:'assigned', note:'New WO for ' + customer, time:timeStr });
     refreshAdvisorNotifications();
-
-    showToast(`✅ ${woNum} created & assigned to ${tech}!`);
-
-    // Clear form
-    ['cwo-customer','cwo-phone','cwo-year','cwo-make','cwo-model','cwo-vin','cwo-notes']
-      .forEach(id => document.getElementById(id).value = '');
-    ['cwo-service','cwo-tech','cwo-priority']
-      .forEach(id => document.getElementById(id).value = '');
-
+    showToast('✅ ' + woNum + ' created & assigned to ' + tech + '!');
+    ['cwo-customer','cwo-phone','cwo-year','cwo-make','cwo-model','cwo-vin','cwo-notes'].forEach(id => document.getElementById(id).value = '');
+    ['cwo-service','cwo-tech','cwo-priority'].forEach(id => document.getElementById(id).value = '');
     setTimeout(() => goto('screen-advisor-home'), 1200);
   }
 
@@ -1683,16 +1906,10 @@
     t.textContent = msg;
     t.style.opacity = '1';
     t.style.transform = 'translateX(-50%) translateY(0)';
-    setTimeout(()=>{
-      t.style.opacity = '0';
-      t.style.transform = 'translateX(-50%) translateY(20px)';
-    }, 2800);
+    setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 2800);
   }
 
-  // Enter key on login
-  document.getElementById('login-pw').addEventListener('keydown', e=>{
-    if (e.key==='Enter') doLogin();
-  });
+  document.getElementById('login-pw').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
 </script>
 </body>
 </html>
