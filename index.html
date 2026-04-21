@@ -1690,12 +1690,18 @@
         stamp.style.cssText = 'font-size:11px;color:var(--green);font-weight:600;margin-top:2px;';
         stamp.textContent = '✓ Completed at ' + timeStr;
         woItem.appendChild(stamp);
+        // Disable row click — completed WOs cannot be opened by technician
+        woItem.style.opacity = '0.7';
+        woItem.style.cursor  = 'default';
+        woItem.removeAttribute('onclick');
       } else {
-        // If overridden back from completed, restore Open button
+        // If overridden back from completed, restore Open button and clickability
         const existing = woItem.querySelector('.wo-completed-time');
         if (existing) existing.remove();
+        woItem.style.opacity = '1';
+        woItem.style.cursor  = 'pointer';
         if (!woItem.querySelector('.wo-open')) {
-          const args = woItem.getAttribute('onclick');
+          const args = woItem.getAttribute('onclick') || '';
           const btn = document.createElement('button');
           btn.className = 'wo-open';
           btn.setAttribute('onclick', 'event.stopPropagation();' + args);
@@ -1712,10 +1718,10 @@
     refreshTechSummary();
 
     // Push to activity log
-    activityLog.unshift({ woId:wo.id, car:wo.car, svc:wo.svc, prevStatus, newStatus, note, time:timeStr, date:getTodayString() });
+    activityLog.unshift({ woId:wo.id, car:wo.car, svc:wo.svc, prevStatus, newStatus, note, time:timeStr, date:getTodayString(), sortKey:Date.now() });
 
     // Push to advisor notifications
-    advisorNotifications.unshift({ woId:wo.id, car:wo.car, tech:wo.tech, prevStatus, status:newStatus, note, time:timeStr });
+    advisorNotifications.unshift({ woId:wo.id, car:wo.car, tech:wo.tech, prevStatus, status:newStatus, note, time:timeStr, sortKey:Date.now() });
     refreshAdvisorNotifications();
 
     showToast('✅ ' + wo.id + ' updated to ' + statusLabel[newStatus]);
@@ -2017,20 +2023,27 @@
       techItem.dataset.status = newStatus;
       const badgeEl = techItem.querySelector('.badge');
       if (badgeEl) { badgeEl.className = 'badge ' + newStatus; badgeEl.textContent = statusLabel[newStatus]; }
-      // If override reverses a completed WO: restore Open button, remove timestamp
+      // If override reverses a completed WO: restore Open button, remove timestamp, restore click
       if (newStatus !== 'completed') {
         const stamp = techItem.querySelector('.wo-completed-time');
         if (stamp) stamp.remove();
+        // Restore the onclick using data from woMasterList
+        const masterEntry = woMasterList.find(w => w.woId === wo.id);
+        if (masterEntry) {
+          const restoredArgs = "'" + masterEntry.woId + "','" + masterEntry.car + "','" + masterEntry.svc + "','" + newStatus + "','" + masterEntry.tech + "','" + masterEntry.advisor + "','" + masterEntry.date + "','" + masterEntry.priority + "'";
+          techItem.setAttribute('onclick', 'openWODetail(' + restoredArgs + ')');
+          techItem.style.opacity = '1';
+          techItem.style.cursor  = 'pointer';
+        }
         if (!techItem.querySelector('.wo-open')) {
-          const args = techItem.getAttribute('onclick');
           const btn  = document.createElement('button');
           btn.className = 'wo-open';
-          btn.setAttribute('onclick', 'event.stopPropagation();' + args);
+          btn.setAttribute('onclick', 'event.stopPropagation();openWODetail(' + (masterEntry ? "'" + masterEntry.woId + "','" + masterEntry.car + "','" + masterEntry.svc + "','" + newStatus + "','" + masterEntry.tech + "','" + masterEntry.advisor + "','" + masterEntry.date + "','" + masterEntry.priority + "'" : '') + ')');
           btn.textContent = 'Open';
           techItem.appendChild(btn);
         }
       }
-      // If override sets to completed: remove Open button, add timestamp
+      // If override sets to completed: remove Open button, add timestamp, disable click
       if (newStatus === 'completed') {
         const openBtn = techItem.querySelector('.wo-open');
         if (openBtn) openBtn.remove();
@@ -2041,13 +2054,18 @@
         stamp.style.cssText = 'font-size:11px;color:var(--green);font-weight:600;margin-top:2px;';
         stamp.textContent = '✓ Completed at ' + timeStr + ' (Manager override)';
         techItem.appendChild(stamp);
+        techItem.style.opacity = '0.7';
+        techItem.style.cursor  = 'default';
+        techItem.removeAttribute('onclick');
       }
       refreshTechSummary();
     }
 
     const now     = new Date();
     const timeStr = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    advisorNotifications.unshift({ woId:wo.id, car:wo.car, tech:'Manager (override)', prevStatus, status:newStatus, note:reason, time:timeStr });
+    advisorNotifications.unshift({ woId:wo.id, car:wo.car, tech:'Manager (override)', prevStatus, status:newStatus, note:reason, time:timeStr, sortKey:Date.now() });
+    // Also push to activityLog so technician sees manager override in Recent Activity
+    activityLog.unshift({ woId:wo.id, car:wo.car, svc:wo.svc, prevStatus, newStatus, note:'Manager override: ' + reason, time:timeStr, date:getTodayString(), sortKey:Date.now() });
     refreshAdvisorNotifications();
 
     showToast('✅ ' + wo.id + ' overridden to ' + statusLabel[newStatus]);
@@ -2116,7 +2134,7 @@
     }
     const now     = new Date();
     const timeStr = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    advisorNotifications.unshift({ woId:woNum, car:vehicle, tech, prevStatus:null, status:'assigned', note:'New WO for ' + customer, time:timeStr });
+    advisorNotifications.unshift({ woId:woNum, car:vehicle, tech, prevStatus:null, status:'assigned', note:'New WO for ' + customer, time:timeStr, sortKey:Date.now() });
     refreshAdvisorNotifications();
     showToast('✅ ' + woNum + ' created & assigned to ' + tech + '!');
     ['cwo-customer','cwo-phone','cwo-year','cwo-make','cwo-model','cwo-vin','cwo-notes'].forEach(id => document.getElementById(id).value = '');
@@ -2143,7 +2161,8 @@
         note:       e.note,
         time:       e.time,
         date:       e.date,
-        by:         'Technician (Bryan A.)'
+        by:         'Technician (Bryan A.)',
+        sortKey:    e.sortKey || 0
       });
     });
 
@@ -2157,10 +2176,14 @@
           note:       n.note,
           time:       n.time,
           date:       getTodayString(),
-          by:         n.tech
+          by:         n.tech,
+          sortKey:    n.sortKey || 0
         });
       }
     });
+
+    // Sort newest first using sortKey if available, else keep insertion order
+    entries.sort((a, b) => (b.sortKey || 0) - (a.sortKey || 0));
 
     const body = document.getElementById('log-modal-body');
     if (entries.length === 0) {
