@@ -1373,6 +1373,18 @@
         <span class="lbl">Vehicle</span>
         <span class="val" id="ov-car">—</span>
       </div>
+      <div class="detail-row">
+        <span class="lbl">Service</span>
+        <span class="val" id="ov-svc">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Technician</span>
+        <span class="val" id="ov-tech">—</span>
+      </div>
+      <div class="detail-row">
+        <span class="lbl">Priority</span>
+        <span class="val" id="ov-priority">—</span>
+      </div>
       <div class="detail-row" style="border-bottom:none;">
         <span class="lbl">Current Status</span>
         <span class="val" id="ov-current-badge">—</span>
@@ -1446,12 +1458,12 @@
 <!-- ═══════════════════════════════════════════════ -->
 <div id="log-history-overlay" style="
   display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);
-  z-index:800;align-items:flex-end;justify-content:center;">
+  z-index:800;align-items:flex-start;justify-content:center;">
   <div style="
-    background:var(--cream);border-radius:24px 24px 0 0;
+    background:var(--cream);border-radius:0 0 24px 24px;
     width:100%;max-width:420px;max-height:75vh;
     display:flex;flex-direction:column;overflow:hidden;
-    box-shadow:0 -4px 32px rgba(139,84,18,0.22);">
+    box-shadow:0 4px 32px rgba(139,84,18,0.22);">
     <div style="
       background:#c9913a;color:white;
       padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
@@ -1957,6 +1969,9 @@
     const wo = currentWO;
     document.getElementById('ov-woid').textContent        = wo.id;
     document.getElementById('ov-car').textContent         = wo.car;
+    document.getElementById('ov-svc').textContent         = wo.svc;
+    document.getElementById('ov-tech').textContent        = wo.tech;
+    document.getElementById('ov-priority').textContent    = wo.priority;
     document.getElementById('ov-current-badge').innerHTML = badgeMap[wo.status] || wo.status;
     document.getElementById('ov-reason').value            = '';
     document.getElementById('ov-err').style.display       = 'none';
@@ -1989,10 +2004,45 @@
 
     document.getElementById('md-status').innerHTML = badgeMap[newStatus];
 
+    // Update manager WO list badge
     const mgrRow = document.querySelector('#mgr-wo-list .mgr-wo-row[onclick*="' + wo.id + '"]');
     if (mgrRow) {
       const badgeEl = mgrRow.querySelector('.badge');
       if (badgeEl) { badgeEl.className = 'badge ' + newStatus; badgeEl.textContent = statusLabel[newStatus]; }
+    }
+
+    // Update technician WO dashboard badge
+    const techItem = document.querySelector('#wo-list .wo-item[onclick*="' + wo.id + '"]');
+    if (techItem) {
+      techItem.dataset.status = newStatus;
+      const badgeEl = techItem.querySelector('.badge');
+      if (badgeEl) { badgeEl.className = 'badge ' + newStatus; badgeEl.textContent = statusLabel[newStatus]; }
+      // If override reverses a completed WO: restore Open button, remove timestamp
+      if (newStatus !== 'completed') {
+        const stamp = techItem.querySelector('.wo-completed-time');
+        if (stamp) stamp.remove();
+        if (!techItem.querySelector('.wo-open')) {
+          const args = techItem.getAttribute('onclick');
+          const btn  = document.createElement('button');
+          btn.className = 'wo-open';
+          btn.setAttribute('onclick', 'event.stopPropagation();' + args);
+          btn.textContent = 'Open';
+          techItem.appendChild(btn);
+        }
+      }
+      // If override sets to completed: remove Open button, add timestamp
+      if (newStatus === 'completed') {
+        const openBtn = techItem.querySelector('.wo-open');
+        if (openBtn) openBtn.remove();
+        const existing = techItem.querySelector('.wo-completed-time');
+        if (existing) existing.remove();
+        const stamp = document.createElement('div');
+        stamp.className = 'wo-completed-time';
+        stamp.style.cssText = 'font-size:11px;color:var(--green);font-weight:600;margin-top:2px;';
+        stamp.textContent = '✓ Completed at ' + timeStr + ' (Manager override)';
+        techItem.appendChild(stamp);
+      }
+      refreshTechSummary();
     }
 
     const now     = new Date();
@@ -2002,9 +2052,10 @@
 
     showToast('✅ ' + wo.id + ' overridden to ' + statusLabel[newStatus]);
     setTimeout(() => {
-      history = [];
+      history = ['screen-manager-home'];
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById('screen-mgr-detail').classList.add('active');
+      document.getElementById('screen-mgr-all-wo').classList.add('active');
+      refreshMgrAllWOList();
     }, 1000);
   }
 
@@ -2080,10 +2131,11 @@
     document.getElementById('log-modal-title').textContent = woId + ' — Log History';
     document.getElementById('log-modal-sub').textContent   = carLabel;
 
-    // Gather all entries for this WO from activityLog + advisorNotifications
+    // Gather all entries for this WO — no duplicates
+    // activityLog = technician changes; advisorNotifications manager overrides only
     const entries = [];
 
-    // From technician activity log
+    // Technician changes from activity log
     activityLog.forEach(e => {
       if (e.woId === woId) entries.push({
         prevStatus: e.prevStatus,
@@ -2091,21 +2143,23 @@
         note:       e.note,
         time:       e.time,
         date:       e.date,
-        by:         'Technician'
+        by:         'Technician (Bryan A.)'
       });
     });
 
-    // From advisor notifications (captures manager overrides too)
+    // Manager overrides only from advisorNotifications (skip technician entries to avoid duplicates)
     advisorNotifications.forEach(n => {
       const rawId = n.woId.replace('WO-','WO');
-      if (rawId === woId) entries.push({
-        prevStatus: n.prevStatus,
-        newStatus:  n.status,
-        note:       n.note,
-        time:       n.time,
-        date:       getTodayString(),
-        by:         n.tech
-      });
+      if (rawId === woId && n.tech && n.tech.toLowerCase().includes('manager')) {
+        entries.push({
+          prevStatus: n.prevStatus,
+          newStatus:  n.status,
+          note:       n.note,
+          time:       n.time,
+          date:       getTodayString(),
+          by:         n.tech
+        });
+      }
     });
 
     const body = document.getElementById('log-modal-body');
