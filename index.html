@@ -1833,10 +1833,16 @@
       return;
     }
     empty.style.display = 'none';
-    list.innerHTML = activityLog.map(entry =>
-      '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:6px;">' +
+    list.innerHTML = activityLog.map(entry => {
+      const overrideBadge = entry.isOverride
+        ? '<span style="background:#FFF8EE;color:#AD6807;border:1px solid #E8C97A;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.04em;">MANAGER OVERRIDE</span>'
+        : '';
+      const byLabel = entry.isOverride
+        ? '<div style="font-size:12px;font-weight:600;color:#AD6807;">Manager (override)</div>'
+        : '<div style="font-size:12px;font-weight:600;color:var(--sub);">Technician (Bryan A.)</div>';
+      return '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:6px;">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">' +
-          '<div class="wo-id">' + entry.woId + '</div>' +
+          byLabel +
           '<div style="display:flex;align-items:center;gap:4px;">' +
             badgeMap[entry.prevStatus] +
             '<span style="color:var(--sub);font-size:13px;font-weight:700;">→</span>' +
@@ -1845,10 +1851,12 @@
         '</div>' +
         '<div style="font-size:14px;font-weight:600;color:var(--text);">' + entry.car + '</div>' +
         '<div style="font-size:12px;color:var(--sub);">' + entry.svc + '</div>' +
-        (entry.note ? '<div style="font-size:12px;color:var(--sub);font-style:italic;margin-top:2px;">"' + entry.note + '"</div>' : '') +
+        (entry.isOverride && entry.note
+          ? '<div style="font-size:12px;color:#7A5C00;font-style:italic;margin-top:2px;">Reason: ' + entry.note.replace("Manager override: ","") + '</div>'
+          : (entry.note ? '<div style="font-size:12px;color:var(--sub);font-style:italic;margin-top:2px;">"' + entry.note + '"</div>' : '')) +
         '<div style="font-size:11px;color:#aaa;margin-top:2px;">' + entry.time + ' · ' + entry.date + '</div>' +
-      '</div>'
-    ).join('');
+      '</div>';
+    }).join('');
   }
 
   // ── OPEN EDIT NOTES ──
@@ -2017,8 +2025,16 @@
       if (badgeEl) { badgeEl.className = 'badge ' + newStatus; badgeEl.textContent = statusLabel[newStatus]; }
     }
 
+    // Declare timeStr here so it's available for techItem updates below
+    const now     = new Date();
+    const timeStr = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+
     // Update technician WO dashboard badge
-    const techItem = document.querySelector('#wo-list .wo-item[onclick*="' + wo.id + '"]');
+    // Use text content search — onclick may have been removed if WO was completed
+    const techItem = Array.from(document.querySelectorAll('#wo-list .wo-item')).find(el => {
+      const woIdEl = el.querySelector('.wo-id');
+      return woIdEl && woIdEl.textContent.trim() === wo.id;
+    });
     if (techItem) {
       techItem.dataset.status = newStatus;
       const badgeEl = techItem.querySelector('.badge');
@@ -2061,11 +2077,9 @@
       refreshTechSummary();
     }
 
-    const now     = new Date();
-    const timeStr = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     advisorNotifications.unshift({ woId:wo.id, car:wo.car, tech:'Manager (override)', prevStatus, status:newStatus, note:reason, time:timeStr, sortKey:Date.now() });
     // Also push to activityLog so technician sees manager override in Recent Activity
-    activityLog.unshift({ woId:wo.id, car:wo.car, svc:wo.svc, prevStatus, newStatus, note:'Manager override: ' + reason, time:timeStr, date:getTodayString(), sortKey:Date.now() });
+    activityLog.unshift({ woId:wo.id, car:wo.car, svc:wo.svc, prevStatus, newStatus, note:'Manager override: ' + reason, time:timeStr, date:getTodayString(), sortKey:Date.now(), isOverride:true });
     refreshAdvisorNotifications();
 
     showToast('✅ ' + wo.id + ' overridden to ' + statusLabel[newStatus]);
@@ -2153,9 +2167,9 @@
     // activityLog = technician changes; advisorNotifications manager overrides only
     const entries = [];
 
-    // Technician changes from activity log
+    // Technician changes from activity log (skip override entries — shown via manager loop)
     activityLog.forEach(e => {
-      if (e.woId === woId) entries.push({
+      if (e.woId === woId && !e.isOverride) entries.push({
         prevStatus: e.prevStatus,
         newStatus:  e.newStatus,
         note:       e.note,
