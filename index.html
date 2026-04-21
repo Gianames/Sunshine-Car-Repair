@@ -688,16 +688,16 @@
         <button class="wo-open" onclick="event.stopPropagation();openWODetail('WO1075','2014 Porsche 918','Engine Diagnostic','paused','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">Open</button>
       </div>
 
-      <div class="wo-item" data-status="completed" onclick="openWODetail('WO1056','2026 BMW M4','Tire Rotation + Alignment','completed','Bryan A.','Nicole R.','Apr 2, 2026','Low')">
+      <div class="wo-item" data-status="paused" onclick="openWODetail('WO1056','2026 BMW M4','Tire Rotation + Alignment','paused','Bryan A.','Nicole R.','Apr 2, 2026','Low')">
         <div class="wo-top">
           <div>
             <div class="wo-id">WO1056</div>
             <div class="wo-car">2026 BMW M4</div>
           </div>
-          <span class="badge completed">Completed</span>
+          <span class="badge paused">Paused</span>
         </div>
         <div class="wo-svc">Tire Rotation + Alignment</div>
-        <button class="wo-open" onclick="event.stopPropagation();openWODetail('WO1056','2026 BMW M4','Tire Rotation + Alignment','completed','Bryan A.','Nicole R.','Apr 2, 2026','Low')">Open</button>
+        <button class="wo-open" onclick="event.stopPropagation();openWODetail('WO1056','2026 BMW M4','Tire Rotation + Alignment','paused','Bryan A.','Nicole R.','Apr 2, 2026','Low')">Open</button>
       </div>
     </div>
   </div>
@@ -798,19 +798,19 @@
 
     <div class="summary-strip card" style="padding:16px;grid-template-columns:repeat(4,1fr);">
       <div class="sep">
-        <div class="num" style="color:#6A1B9A">2</div>
+        <div class="num" id="adv-num-assigned" style="color:#6A1B9A">2</div>
         <div class="lbl">Assigned</div>
       </div>
       <div class="sep">
-        <div class="num blue">2</div>
+        <div class="num blue" id="adv-num-inprogress">2</div>
         <div class="lbl">In Progress</div>
       </div>
       <div class="sep">
-        <div class="num orange">1</div>
+        <div class="num orange" id="adv-num-paused">2</div>
         <div class="lbl">Paused</div>
       </div>
       <div>
-        <div class="num green">1</div>
+        <div class="num green" id="adv-num-completed">0</div>
         <div class="lbl">Completed</div>
       </div>
     </div>
@@ -1055,85 +1055,60 @@
       <div class="welcome-sub" id="date-manager"></div>
     </div>
 
-    <!-- Summary strip matching advisor numbers exactly -->
+    <!-- Summary strip -->
     <div class="summary-strip card" style="padding:16px;grid-template-columns:repeat(4,1fr);">
       <div class="sep">
-        <div class="num" style="color:#6A1B9A">2</div>
+        <div class="num" id="mgr-num-assigned" style="color:#6A1B9A">2</div>
         <div class="lbl">Assigned</div>
       </div>
       <div class="sep">
-        <div class="num blue">2</div>
+        <div class="num blue" id="mgr-num-inprogress">2</div>
         <div class="lbl">In Progress</div>
       </div>
       <div class="sep">
-        <div class="num orange">1</div>
+        <div class="num orange" id="mgr-num-paused">2</div>
         <div class="lbl">Paused</div>
       </div>
       <div>
-        <div class="num green">1</div>
+        <div class="num green" id="mgr-num-completed">0</div>
         <div class="lbl">Completed</div>
       </div>
     </div>
 
     <!-- All active work orders list -->
-    <div class="card-title" style="margin-bottom:0">All Work Orders</div>
+    <div class="card-title" style="margin-bottom:0">Quick Actions</div>
 
-    <div id="mgr-wo-list" style="display:flex;flex-direction:column;gap:10px;">
-
-      <div class="mgr-wo-row" onclick="openMgrDetail('WO1083','2022 Toyota Camry','Full Inspection','assigned','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">
-        <div class="mgr-left">
-          <div class="wo-id">WO1083</div>
-          <div class="mgr-tech">Bryan A.</div>
-        </div>
-        <span class="badge assigned">Assigned</span>
-        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1083','2022 Toyota Camry','Full Inspection','assigned','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">Details</button>
+    <button class="action-btn" onclick="goto('screen-mgr-all-wo')">
+      <div class="icon">📋</div>
+      <div>
+        <div class="label">All Work Orders</div>
+        <div class="desc">View and manage all active jobs</div>
       </div>
+      <div class="arrow">›</div>
+    </button>
 
-      <div class="mgr-wo-row" onclick="openMgrDetail('WO1042','2021 Ford Mustang','Oil Change + Brake Insp.','in-progress','Bryan A.','Nicole R.','Apr 3, 2026','High')">
-        <div class="mgr-left">
-          <div class="wo-id">WO1042</div>
-          <div class="mgr-tech">Bryan A.</div>
+    <div class="card">
+      <div class="card-title">Recent Notifications</div>
+      <div id="mgr-notif-list">
+        <div class="notif-item">
+          <div class="ni-icon">🔔</div>
+          <div style="flex:1;min-width:0;">
+            <div class="ni-wo">WO-1042 · <span style="color:var(--sub);font-weight:400">Bryan A.</span></div>
+            <div class="ni-sub" style="margin-top:2px;">2021 Ford Mustang</div>
+            <div style="display:flex;align-items:center;gap:4px;margin-top:4px;"><span class="badge assigned">Assigned</span><span style="color:var(--sub);font-size:13px;font-weight:700;">→</span><span class="badge in-progress">In Progress</span></div>
+            <div class="ni-sub" style="margin-top:3px;color:#aaa;">9:14 AM</div>
+          </div>
         </div>
-        <span class="badge in-progress">In Progress</span>
-        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1042','2021 Ford Mustang','Oil Change + Brake Insp.','in-progress','Bryan A.','Nicole R.','Apr 3, 2026','High')">Details</button>
-      </div>
-
-      <div class="mgr-wo-row" onclick="openMgrDetail('WO1048','2026 Porsche GT3','Engine Diagnostic','assigned','Alvaro N.','Nicole R.','Apr 3, 2026','Medium')">
-        <div class="mgr-left">
-          <div class="wo-id">WO1048</div>
-          <div class="mgr-tech">Alvaro N.</div>
+        <div class="notif-item" style="border-bottom:none;">
+          <div class="ni-icon">🔔</div>
+          <div style="flex:1;min-width:0;">
+            <div class="ni-wo">WO-1048 · <span style="color:var(--sub);font-weight:400">Alvaro N.</span></div>
+            <div class="ni-sub" style="margin-top:2px;">2026 Porsche GT3</div>
+            <div style="display:flex;align-items:center;gap:4px;margin-top:4px;"><span class="badge assigned">Assigned</span></div>
+            <div class="ni-sub" style="margin-top:3px;color:#aaa;">8:47 AM</div>
+          </div>
         </div>
-        <span class="badge assigned">Assigned</span>
-        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1048','2026 Porsche GT3','Engine Diagnostic','assigned','Alvaro N.','Nicole R.','Apr 3, 2026','Medium')">Details</button>
       </div>
-
-      <div class="mgr-wo-row" onclick="openMgrDetail('WO1075','2014 Porsche 918','Engine Diagnostic','paused','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">
-        <div class="mgr-left">
-          <div class="wo-id">WO1075</div>
-          <div class="mgr-tech">Bryan A.</div>
-        </div>
-        <span class="badge paused">Paused</span>
-        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1075','2014 Porsche 918','Engine Diagnostic','paused','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">Details</button>
-      </div>
-
-      <div class="mgr-wo-row" onclick="openMgrDetail('WO1056','2026 BMW M4','Tire Rotation + Alignment','completed','Bryan A.','Nicole R.','Apr 2, 2026','Low')">
-        <div class="mgr-left">
-          <div class="wo-id">WO1056</div>
-          <div class="mgr-tech">Bryan A.</div>
-        </div>
-        <span class="badge completed">Completed</span>
-        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1056','2026 BMW M4','Tire Rotation + Alignment','completed','Bryan A.','Nicole R.','Apr 2, 2026','Low')">Details</button>
-      </div>
-
-      <div class="mgr-wo-row" onclick="openMgrDetail('WO1038','2023 Honda Civic','Transmission Service','in-progress','Marcus T.','Nicole R.','Apr 3, 2026','High')">
-        <div class="mgr-left">
-          <div class="wo-id">WO1038</div>
-          <div class="mgr-tech">Marcus T.</div>
-        </div>
-        <span class="badge in-progress">In Progress</span>
-        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1038','2023 Honda Civic','Transmission Service','in-progress','Marcus T.','Nicole R.','Apr 3, 2026','High')">Details</button>
-      </div>
-
     </div>
   </div>
   <div class="bottomnav manager">
@@ -1150,8 +1125,61 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════ -->
-<!--  SCREEN 12 — MANAGER WORK ORDER DETAIL          -->
+<!--  SCREEN — ALL WORK ORDERS (Manager)             -->
 <!-- ═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-mgr-all-wo">
+  <div class="topbar manager">
+    <span class="topbar-title">All Work Orders</span>
+    <span class="topbar-role">Manager</span>
+  </div>
+  <div class="body">
+    <div id="mgr-wo-list" style="display:flex;flex-direction:column;gap:10px;">
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1083','2022 Toyota Camry','Full Inspection','assigned','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">
+        <div class="mgr-left"><div class="wo-id">WO1083</div><div class="mgr-tech">Bryan A.</div></div>
+        <span class="badge assigned">Assigned</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1083','2022 Toyota Camry','Full Inspection','assigned','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">Details</button>
+      </div>
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1042','2021 Ford Mustang','Oil Change + Brake Insp.','in-progress','Bryan A.','Nicole R.','Apr 3, 2026','High')">
+        <div class="mgr-left"><div class="wo-id">WO1042</div><div class="mgr-tech">Bryan A.</div></div>
+        <span class="badge in-progress">In Progress</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1042','2021 Ford Mustang','Oil Change + Brake Insp.','in-progress','Bryan A.','Nicole R.','Apr 3, 2026','High')">Details</button>
+      </div>
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1048','2026 Porsche GT3','Engine Diagnostic','assigned','Alvaro N.','Nicole R.','Apr 3, 2026','Medium')">
+        <div class="mgr-left"><div class="wo-id">WO1048</div><div class="mgr-tech">Alvaro N.</div></div>
+        <span class="badge assigned">Assigned</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1048','2026 Porsche GT3','Engine Diagnostic','assigned','Alvaro N.','Nicole R.','Apr 3, 2026','Medium')">Details</button>
+      </div>
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1075','2014 Porsche 918','Engine Diagnostic','paused','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">
+        <div class="mgr-left"><div class="wo-id">WO1075</div><div class="mgr-tech">Bryan A.</div></div>
+        <span class="badge paused">Paused</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1075','2014 Porsche 918','Engine Diagnostic','paused','Bryan A.','Nicole R.','Apr 3, 2026','Medium')">Details</button>
+      </div>
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1056','2026 BMW M4','Tire Rotation + Alignment','paused','Bryan A.','Nicole R.','Apr 2, 2026','Low')">
+        <div class="mgr-left"><div class="wo-id">WO1056</div><div class="mgr-tech">Bryan A.</div></div>
+        <span class="badge paused">Paused</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1056','2026 BMW M4','Tire Rotation + Alignment','paused','Bryan A.','Nicole R.','Apr 2, 2026','Low')">Details</button>
+      </div>
+      <div class="mgr-wo-row" onclick="openMgrDetail('WO1038','2023 Honda Civic','Transmission Service','in-progress','Marcus T.','Nicole R.','Apr 3, 2026','High')">
+        <div class="mgr-left"><div class="wo-id">WO1038</div><div class="mgr-tech">Marcus T.</div></div>
+        <span class="badge in-progress">In Progress</span>
+        <button class="mgr-details-btn" onclick="event.stopPropagation();openMgrDetail('WO1038','2023 Honda Civic','Transmission Service','in-progress','Marcus T.','Nicole R.','Apr 3, 2026','High')">Details</button>
+      </div>
+    </div>
+  </div>
+  <div class="bottomnav manager">
+    <button onclick="goBack()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button onclick="goto('screen-manager-home')" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    <button onclick="doLogout()" title="Sign Out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</div>
+
+
 <div class="screen" id="screen-mgr-detail">
   <div class="topbar manager">
     <span class="topbar-title" id="mgr-detail-title">Work Order Detail</span>
@@ -1431,7 +1459,7 @@
     WO1083: 'assigned',
     WO1042: 'in-progress',
     WO1075: 'paused',
-    WO1056: 'completed',
+    WO1056: 'paused',
     WO1048: 'assigned',
     WO1038: 'in-progress'
   };
@@ -1458,7 +1486,7 @@
     { woId:'WO1042', car:'2021 Ford Mustang',  svc:'Oil Change + Brake Insp.',  tech:'Bryan A.',  advisor:'Nicole R.', date:'Apr 3, 2026', priority:'High'   },
     { woId:'WO1048', car:'2026 Porsche GT3',   svc:'Engine Diagnostic',          tech:'Alvaro N.', advisor:'Nicole R.', date:'Apr 3, 2026', priority:'Medium' },
     { woId:'WO1075', car:'2014 Porsche 918',   svc:'Engine Diagnostic',          tech:'Bryan A.',  advisor:'Nicole R.', date:'Apr 3, 2026', priority:'Medium' },
-    { woId:'WO1056', car:'2026 BMW M4',        svc:'Tire Rotation + Alignment', tech:'Bryan A.',  advisor:'Nicole R.', date:'Apr 2, 2026', priority:'Low'    },
+    { woId:'WO1056', car:'2026 BMW M4',        svc:'Tire Rotation + Alignment', tech:'Bryan A.',  advisor:'Nicole R.', date:'Apr 2, 2026', priority:'Low', status:'paused' },
     { woId:'WO1038', car:'2023 Honda Civic',   svc:'Transmission Service',       tech:'Marcus T.', advisor:'Nicole R.', date:'Apr 3, 2026', priority:'High'   },
   ];
 
@@ -1501,6 +1529,7 @@
     window.scrollTo(0,0);
     if (id === 'screen-all-work-orders') refreshAllWOList();
     if (id === 'screen-recent-activity') refreshActivityLog();
+    if (id === 'screen-mgr-all-wo')      refreshMgrAllWOList();
   }
   function goBack() {
     if (!history.length) return;
@@ -1520,7 +1549,8 @@
       currentRole = c.role;
       history = [];
       setDates();
-      if (id === 'Advisor') refreshAdvisorNotifications();
+      if (id === 'Advisor') { refreshAdvisorNotifications(); refreshAdvisorSummary(); }
+      if (id === 'Manager') { refreshMgrNotifications(); refreshMgrSummary(); }
       goto(c.home);
     } else {
       err.style.display = 'block';
@@ -1623,10 +1653,85 @@
 
     showToast('✅ ' + wo.id + ' updated to ' + statusLabel[newStatus]);
     setTimeout(() => {
-      history = [];
+      // Return to dashboard; set history so the back button on detail still works
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById('screen-wo-dashboard').classList.add('active');
+      history = ['screen-tech-home'];
     }, 1000);
+  }
+
+  // ── REFRESH ADVISOR SUMMARY ──
+  function refreshAdvisorSummary() {
+    const counts = { assigned:0, 'in-progress':0, paused:0, completed:0 };
+    Object.values(woStatus).forEach(s => { if (counts[s] !== undefined) counts[s]++; });
+    const a = document.getElementById('adv-num-assigned');
+    const i = document.getElementById('adv-num-inprogress');
+    const p = document.getElementById('adv-num-paused');
+    const c = document.getElementById('adv-num-completed');
+    if (a) a.textContent = counts['assigned'];
+    if (i) i.textContent = counts['in-progress'];
+    if (p) p.textContent = counts['paused'];
+    if (c) c.textContent = counts['completed'];
+  }
+
+  // ── REFRESH MANAGER SUMMARY ──
+  function refreshMgrSummary() {
+    const counts = { assigned:0, 'in-progress':0, paused:0, completed:0 };
+    Object.values(woStatus).forEach(s => { if (counts[s] !== undefined) counts[s]++; });
+    const a = document.getElementById('mgr-num-assigned');
+    const i = document.getElementById('mgr-num-inprogress');
+    const p = document.getElementById('mgr-num-paused');
+    const c = document.getElementById('mgr-num-completed');
+    if (a) a.textContent = counts['assigned'];
+    if (i) i.textContent = counts['in-progress'];
+    if (p) p.textContent = counts['paused'];
+    if (c) c.textContent = counts['completed'];
+  }
+
+  // ── REFRESH MANAGER NOTIFICATIONS ──
+  function refreshMgrNotifications() {
+    const container = document.getElementById('mgr-notif-list');
+    if (!container) return;
+    const staticOld = [
+      { woId:'WO1042', car:'2021 Ford Mustang', tech:'Bryan A.',  prevStatus:'assigned', status:'in-progress', note:'', time:'9:14 AM' },
+      { woId:'WO1048', car:'2026 Porsche GT3',  tech:'Alvaro N.', prevStatus:null,       status:'assigned',    note:'', time:'8:47 AM' }
+    ];
+    const all = [...advisorNotifications, ...staticOld].slice(0, 2);
+    container.innerHTML = all.map(function(n, i) {
+      const transition = n.prevStatus
+        ? badgeMap[n.prevStatus] + '<span style="color:var(--sub);font-size:13px;font-weight:700;">→</span>' + badgeMap[n.status]
+        : badgeMap[n.status];
+      const noteHtml = n.note ? '<div class="ni-sub" style="font-style:italic;">"' + n.note + '"</div>' : '';
+      const border   = i === all.length - 1 ? 'border-bottom:none;' : '';
+      const woLabel  = n.woId.replace(/^WO(?!-)/, 'WO-');
+      return '<div class="notif-item" style="' + border + '">' +
+        '<div class="ni-icon">🔔</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="ni-wo">' + woLabel + ' · <span style="color:var(--sub);font-weight:400">' + n.tech + '</span></div>' +
+          '<div class="ni-sub" style="margin-top:2px;">' + n.car + '</div>' +
+          '<div style="display:flex;align-items:center;gap:4px;margin-top:4px;flex-wrap:wrap;">' + transition + '</div>' +
+          noteHtml +
+          '<div class="ni-sub" style="margin-top:3px;color:#aaa;">' + n.time + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ── REFRESH MANAGER ALL WO LIST ──
+  function refreshMgrAllWOList() {
+    const list = document.getElementById('mgr-wo-list');
+    if (!list) return;
+    // Update every badge in the list to reflect live status
+    list.querySelectorAll('.mgr-wo-row').forEach(row => {
+      const onclick = row.getAttribute('onclick') || '';
+      const match   = onclick.match(/'(WO\d+)'/);
+      if (!match) return;
+      const id         = match[1];
+      const liveStatus = woStatus[id];
+      if (!liveStatus) return;
+      const badgeEl = row.querySelector('.badge');
+      if (badgeEl) { badgeEl.className = 'badge ' + liveStatus; badgeEl.textContent = statusLabel[liveStatus]; }
+    });
   }
 
   // ── REFRESH TECHNICIAN HOME SUMMARY ──
@@ -1691,7 +1796,7 @@
     setTimeout(() => goBack(), 800);
   }
 
-  // ── REFRESH ADVISOR NOTIFICATIONS ──
+  // ── REFRESH ADVISOR NOTIFICATIONS (max 2) ──
   function refreshAdvisorNotifications() {
     const container = document.getElementById('advisor-notif-list');
     if (!container) return;
@@ -1699,7 +1804,8 @@
       { woId:'WO1042', car:'2021 Ford Mustang', tech:'Bryan A.',  prevStatus:'assigned', status:'in-progress', note:'', time:'9:14 AM' },
       { woId:'WO1048', car:'2026 Porsche GT3',  tech:'Alvaro N.', prevStatus:null,       status:'assigned',    note:'', time:'8:47 AM' }
     ];
-    const all = [...advisorNotifications, ...staticOld];
+    // Show latest 2 only
+    const all = [...advisorNotifications, ...staticOld].slice(0, 2);
     container.innerHTML = all.map(function(n, i) {
       const transition = n.prevStatus
         ? badgeMap[n.prevStatus] + '<span style="color:var(--sub);font-size:13px;font-weight:700;">→</span>' + badgeMap[n.status]
@@ -1718,6 +1824,10 @@
         '</div>' +
       '</div>';
     }).join('');
+    // Keep summaries in sync
+    refreshAdvisorSummary();
+    refreshMgrSummary();
+    refreshMgrNotifications();
   }
 
   // ── FILTER ALL WORK ORDERS (Advisor) ──
